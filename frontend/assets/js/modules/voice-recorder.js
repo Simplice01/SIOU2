@@ -13,6 +13,7 @@ import { API_BASE } from './api.js';
 const TRANSCRIBE_ENDPOINT = `${API_BASE}/speech-to-text`;
 
 let mediaRecorder = null;
+let speechRecognition = null;
 let audioChunks = [];
 let isRecording = false;
 
@@ -43,10 +44,69 @@ function isVoiceRecordingSupported() {
 
 async function handleMicClick(micButton, composerInput) {
     if (isRecording) {
+        if (speechRecognition) {
+            speechRecognition.stop();
+            return;
+        }
         stopRecording(micButton);
         return;
     }
+    if (isSpeechRecognitionSupported()) {
+        startSpeechRecognition(micButton, composerInput);
+        return;
+    }
     await startRecording(micButton, composerInput);
+}
+
+function isSpeechRecognitionSupported() {
+    return Boolean(window.SpeechRecognition || window.webkitSpeechRecognition);
+}
+
+function startSpeechRecognition(micButton, composerInput) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    speechRecognition = new SpeechRecognition();
+    speechRecognition.lang = 'fr-FR';
+    speechRecognition.interimResults = false;
+    speechRecognition.continuous = false;
+
+    let transcript = '';
+
+    speechRecognition.addEventListener('result', (event) => {
+        transcript = Array.from(event.results)
+            .map((result) => result[0]?.transcript || '')
+            .join(' ')
+            .trim();
+    });
+
+    speechRecognition.addEventListener('error', (event) => {
+        console.error('[voice-recorder] SpeechRecognition error:', event.error);
+        showToast({
+            title: 'Transcription impossible',
+            text: 'La dictee vocale du navigateur est indisponible. Vous pouvez reessayer ou ecrire votre question directement.',
+            type: 'danger',
+        });
+    });
+
+    speechRecognition.addEventListener('end', () => {
+        isRecording = false;
+        setMicState(micButton, { recording: false, transcribing: false });
+        if (transcript) {
+            insertTranscript(composerInput, transcript);
+        }
+        speechRecognition = null;
+    });
+
+    try {
+        speechRecognition.start();
+        isRecording = true;
+        setMicState(micButton, { recording: true });
+    } catch (err) {
+        speechRecognition = null;
+        isRecording = false;
+        setMicState(micButton, { recording: false, transcribing: false });
+        console.error('[voice-recorder] Impossible de demarrer SpeechRecognition:', err);
+        startRecording(micButton, composerInput);
+    }
 }
 
 async function startRecording(micButton, composerInput) {
