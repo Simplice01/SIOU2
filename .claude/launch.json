@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8202", "--directory", "frontend"],
+      "port": 8202
+    },
+    {
+      "name": "backend",
+      "runtimeExecutable": ".venv/Scripts/python.exe",
+      "runtimeArgs": ["-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", "8055"],
+      "port": 8055
+    }
+  ]
+}

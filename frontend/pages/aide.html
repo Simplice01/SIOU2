@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centre d'aide - SIOU</title>
+  <meta name="description" content="Questions fréquentes et assistance sur l'utilisation de SIOU.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/00-variables.css">
+  <link rel="stylesheet" href="/assets/css/01-base.css">
+  <link rel="stylesheet" href="/assets/css/02-layout.css">
+  <link rel="stylesheet" href="/assets/css/03-components.css">
+  <link rel="stylesheet" href="/assets/css/04-chat.css">
+  <link rel="stylesheet" href="/assets/css/05-animations.css">
+  <link rel="stylesheet" href="/assets/css/06-responsive.css">
+</head>
+<body data-page="aide">
+  <a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+  <div class="app-shell">
+    <div data-component="sidebar"></div>
+
+    <div class="content">
+      <div data-component="topbar"></div>
+
+      <main id="main-content" class="page" style="max-width: 860px;">
+        <div class="page__header">
+          <div>
+            <p class="page__eyebrow">Support</p>
+            <h1 class="page__title">Centre d'aide</h1>
+            <p class="page__desc">Retrouvez des réponses aux questions fréquentes ou contactez notre équipe.</p>
+          </div>
+        </div>
+
+        <div class="field" style="max-width: 420px; margin-bottom: var(--sp-6);">
+          <label for="help-search" class="sr-only">Rechercher dans l'aide</label>
+          <input id="help-search" type="search" class="input" placeholder="Rechercher une question..."
+            data-search-input data-search-target="[data-faq-list]" data-search-item="[data-faq-item]">
+        </div>
+
+        <section class="card" style="margin-bottom: var(--sp-6);">
+          <h2 style="font-size: var(--fs-md); margin-bottom: var(--sp-4);">Questions fréquentes</h2>
+          <div data-faq-list style="display:flex; flex-direction:column;">
+            <details class="faq-item" data-faq-item data-search-text="comment poser une question à siou" style="padding: var(--sp-4) 0; border-bottom: 1px solid var(--color-border);">
+              <summary style="cursor:pointer; font-weight:600; font-size: var(--fs-sm);">Comment poser une question à SIOU ?</summary>
+              <p style="margin-top: var(--sp-2); font-size: var(--fs-sm);">Rendez-vous dans l'onglet « Assistant SIOU », puis écrivez votre question dans le champ de saisie en bas de l'écran. Vous pouvez aussi partir d'une suggestion proposée à l'écran d'accueil.</p>
+            </details>
+            <details class="faq-item" data-faq-item data-search-text="sources fiables citations documents officiels" style="padding: var(--sp-4) 0; border-bottom: 1px solid var(--color-border);">
+              <summary style="cursor:pointer; font-weight:600; font-size: var(--fs-sm);">Les réponses sont-elles basées sur des sources fiables ?</summary>
+              <p style="margin-top: var(--sp-2); font-size: var(--fs-sm);">Oui. Chaque réponse s'appuie sur des documents officiels indexés dans la base documentaire, cités directement sous la réponse avec un score de confiance.</p>
+            </details>
+            <details class="faq-item" data-faq-item data-search-text="ajouter un document base documentaire indexation" style="padding: var(--sp-4) 0; border-bottom: 1px solid var(--color-border);">
+              <summary style="cursor:pointer; font-weight:600; font-size: var(--fs-sm);">Comment ajouter un document à la base documentaire ?</summary>
+              <p style="margin-top: var(--sp-2); font-size: var(--fs-sm);">Dans l'onglet « Base documentaire », cliquez sur « Ajouter un document », renseignez son titre et sa catégorie, puis importez le fichier. Il sera indexé automatiquement.</p>
+            </details>
+            <details class="faq-item" data-faq-item data-search-text="données personnelles confidentialité sécurité" style="padding: var(--sp-4) 0;">
+              <summary style="cursor:pointer; font-weight:600; font-size: var(--fs-sm);">Mes données sont-elles protégées ?</summary>
+              <p style="margin-top: var(--sp-2); font-size: var(--fs-sm);">SIOU respecte les exigences de confidentialité applicables aux systèmes d'information de l'administration béninoise. Consultez l'onglet « Paramètres » pour gérer vos préférences.</p>
+            </details>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2 style="font-size: var(--fs-md); margin-bottom: var(--sp-2);">Besoin d'aide supplémentaire ?</h2>
+          <p style="font-size: var(--fs-sm); margin-bottom: var(--sp-4);">Notre équipe support répond sous 24h ouvrées.</p>
+          <div style="display:flex; gap: var(--sp-3); flex-wrap:wrap;">
+            <a class="btn btn--primary" href="mailto:support@siou.gouv.bj">Contacter le support</a>
+            <a class="btn btn--secondary" href="tel:+22921300000">Appeler l'assistance</a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    // Charger le script principal d'abord (il enregistre son écouteur
+    // sur 'siou:components-ready' avant que les composants soient injectés)
+    await import('/assets/js/main.js');
+
+    // Charger les composants partagés (sidebar, topbar)
+    const { loadSharedComponents } = await import('/assets/js/modules/component-loader.js');
+    await loadSharedComponents();
+  </script>
+</body>
+</html>

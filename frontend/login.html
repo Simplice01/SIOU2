@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connexion - SIOU</title>
+  <meta name="description" content="Connexion à SIOU, le Système Intelligent d'Orientation des Usagers du Ministère de la Transformation Digitale et de l'Innovation du Bénin.">
+
+  <!-- Applique le thème enregistré avant le rendu (évite le flash clair/sombre) -->
+  <script>
+    try {
+      var t = JSON.parse(localStorage.getItem('siou:theme'));
+      if (t === 'dark' || t === 'light') {
+        document.documentElement.setAttribute('data-theme', t);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    } catch (e) {}
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/00-variables.css">
+  <link rel="stylesheet" href="/assets/css/01-base.css">
+  <link rel="stylesheet" href="/assets/css/02-layout.css">
+  <link rel="stylesheet" href="/assets/css/03-components.css">
+  <link rel="stylesheet" href="/assets/css/05-animations.css">
+  <link rel="stylesheet" href="/assets/css/07-auth.css">
+</head>
+<body data-page="login">
+  <main class="auth">
+    <!-- Panneau de marque institutionnel -->
+    <section class="auth__brand" aria-hidden="true">
+      <!-- Décor : halos lumineux + constellation d'orientation -->
+      <div class="auth__brand-fx">
+        <span class="auth__brand-glow auth__brand-glow--a"></span>
+        <span class="auth__brand-glow auth__brand-glow--b"></span>
+        <svg class="auth__brand-net" viewBox="0 0 520 520" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g class="auth__brand-net-rings" stroke="url(#siou-brand-stroke)">
+            <circle cx="366" cy="150" r="66"/>
+            <circle cx="366" cy="150" r="118"/>
+            <circle cx="366" cy="150" r="174"/>
+          </g>
+          <g stroke="url(#siou-brand-stroke)" stroke-width="1.25">
+            <line x1="366" y1="150" x2="236" y2="92"/>
+            <line x1="366" y1="150" x2="462" y2="252"/>
+            <line x1="366" y1="150" x2="250" y2="256"/>
+            <line x1="250" y1="256" x2="150" y2="332"/>
+            <line x1="462" y1="252" x2="408" y2="384"/>
+            <line x1="250" y1="256" x2="408" y2="384"/>
+            <line x1="236" y1="92" x2="150" y2="332"/>
+          </g>
+          <g fill="#ffffff">
+            <circle class="auth__brand-node auth__brand-node--hub" cx="366" cy="150" r="6"/>
+            <circle class="auth__brand-node" cx="236" cy="92" r="3.5"/>
+            <circle class="auth__brand-node auth__brand-node--tw" cx="462" cy="252" r="4"/>
+            <circle class="auth__brand-node" cx="250" cy="256" r="3.5"/>
+            <circle class="auth__brand-node auth__brand-node--tw" cx="150" cy="332" r="3"/>
+            <circle class="auth__brand-node" cx="408" cy="384" r="4"/>
+          </g>
+          <defs>
+            <linearGradient id="siou-brand-stroke" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0.04"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
+      <div class="auth__brand-top">
+        <div class="auth__brand-mark"><span>SI</span></div>
+        <p class="auth__brand-org">
+          Ministère de la Transformation Digitale et de l'Innovation | Bénin
+        </p>
+      </div>
+
+      <div class="auth__brand-body">
+        <p class="auth__brand-eyebrow">Espace professionnel</p>
+        <h1 class="auth__brand-title">Système Intelligent d'Orientation des Usagers</h1>
+        <p class="auth__brand-text">
+          Orientez chaque usager vers le bon service, la bonne direction, la bonne
+          information en quelques secondes.
+        </p>
+
+        <ul class="auth__brand-features">
+          <li class="auth__brand-feature">
+            <span class="auth__brand-feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><polygon points="16.5 7.5 10.5 10.5 7.5 16.5 13.5 13.5"/></svg>
+            </span>
+            <span>Orientation instantanée des usagers</span>
+          </li>
+          <li class="auth__brand-feature">
+            <span class="auth__brand-feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>
+            </span>
+            <span>Fondée sur des documents officiels</span>
+          </li>
+          <li class="auth__brand-feature">
+            <span class="auth__brand-feature-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </span>
+            <span>Accès sécurisé et traçable</span>
+          </li>
+        </ul>
+      </div>
+
+      <p class="auth__brand-foot">
+        <span class="auth__brand-status" aria-hidden="true"></span>
+        Accès réservé aux agents habilités.
+      </p>
+    </section>
+
+    <!-- Panneau de connexion -->
+    <section class="auth__panel">
+      <div class="auth__card">
+        <div class="auth__logo">
+          <img src="/logo_SIOU.png" alt="Logo SIOU"
+               onerror="this.style.display='none';this.nextElementSibling.hidden=false;">
+          <span class="auth__logo-fallback" hidden>SIOU</span>
+        </div>
+
+        <h2 class="auth__heading">Connexion</h2>
+        <p class="auth__subheading">
+          Ravi de vous revoir. Connectez-vous pour accéder à votre espace SIOU.
+        </p>
+
+        <form class="auth-form" data-login-form novalidate aria-describedby="login-error">
+          <p class="auth-error" data-login-error id="login-error" role="alert" aria-live="assertive" hidden></p>
+
+          <div class="field">
+            <label class="field__label" for="login-username">Identifiant</label>
+            <input
+              class="input"
+              id="login-username"
+              name="username"
+              type="text"
+              data-login-username
+              autocomplete="username"
+              autocapitalize="none"
+              autofocus
+              required
+              placeholder="Votre identifiant">
+          </div>
+
+          <div class="field">
+            <label class="field__label" for="login-password">Mot de passe</label>
+            <div class="auth-password">
+              <input
+                class="input"
+                id="login-password"
+                name="password"
+                type="password"
+                data-login-password
+                autocomplete="current-password"
+                required
+                placeholder="Votre mot de passe">
+              <button
+                type="button"
+                class="auth-password__toggle"
+                data-password-toggle
+                aria-pressed="false"
+                aria-label="Afficher le mot de passe">
+                <svg class="icon-eye" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                <svg class="icon-eye-off" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="auth-options">
+            <label class="auth-options__remember">
+              <input type="checkbox" name="remember" data-login-remember>
+              <span>Rester connecté</span>
+            </label>
+            <a class="auth-options__link" href="/pages/aide.html">Mot de passe oublié ?</a>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--block btn--lg" data-login-submit>
+            Se connecter
+          </button>
+        </form>
+
+        <p class="auth__legal">
+          En vous connectant, vous acceptez la politique d'usage de la plateforme SIOU.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/assets/js/modules/login.js"></script>
+</body>
+</html>

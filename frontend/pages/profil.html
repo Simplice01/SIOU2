@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mon profil - SIOU</title>
+  <meta name="description" content="Consultez et modifiez vos informations de profil sur SIOU.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/00-variables.css">
+  <link rel="stylesheet" href="/assets/css/01-base.css">
+  <link rel="stylesheet" href="/assets/css/02-layout.css">
+  <link rel="stylesheet" href="/assets/css/03-components.css">
+  <link rel="stylesheet" href="/assets/css/04-chat.css">
+  <link rel="stylesheet" href="/assets/css/05-animations.css">
+  <link rel="stylesheet" href="/assets/css/06-responsive.css">
+</head>
+<body data-page="profil">
+  <a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+  <div class="app-shell">
+    <div data-component="sidebar"></div>
+
+    <div class="content">
+      <div data-component="topbar"></div>
+
+      <main id="main-content" class="page page--narrow">
+        <div class="page__header">
+          <div>
+            <p class="page__eyebrow">Compte</p>
+            <h1 class="page__title">Mon profil</h1>
+            <p class="page__desc">Vos informations personnelles et d'accès à SIOU.</p>
+          </div>
+        </div>
+
+        <section class="card profile-header settings-card">
+          <span class="avatar avatar--lg" aria-hidden="true" data-profile-avatar>··</span>
+          <div class="profile-header__info">
+            <h2 class="profile-header__name" data-profile-fullname>—</h2>
+            <p class="profile-header__role" data-profile-role>—</p>
+            <span class="badge profile-header__badge" data-profile-status hidden></span>
+          </div>
+        </section>
+
+        <form class="card settings-card" data-profile-form novalidate>
+          <h2 class="settings-card__title">Informations personnelles</h2>
+          <div class="grid grid--2">
+            <div class="field">
+              <label class="field__label" for="profile-first-name">Prénom</label>
+              <input id="profile-first-name" class="input" type="text" name="first_name" autocomplete="given-name">
+            </div>
+            <div class="field">
+              <label class="field__label" for="profile-last-name">Nom</label>
+              <input id="profile-last-name" class="input" type="text" name="last_name" autocomplete="family-name">
+            </div>
+            <div class="field">
+              <label class="field__label" for="profile-username">Identifiant</label>
+              <input id="profile-username" class="input" type="text" autocomplete="username" readonly>
+              <p class="field__hint">L'identifiant de connexion n'est pas modifiable.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="profile-role">Rôle</label>
+              <input id="profile-role" class="input" type="text" readonly>
+              <p class="field__hint">Attribué par un administrateur.</p>
+            </div>
+          </div>
+          <button class="btn btn--primary form-actions" type="submit" data-profile-submit>Enregistrer les modifications</button>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    // Charger le script principal d'abord (il enregistre son écouteur
+    // sur 'siou:components-ready' avant que les composants soient injectés)
+    await import('/assets/js/main.js');
+
+    // Charger les composants partagés (sidebar, topbar)
+    const { loadSharedComponents } = await import('/assets/js/modules/component-loader.js');
+    await loadSharedComponents();
+
+    // Contrôleur de la page profil (chargement + enregistrement)
+    await import('/assets/js/modules/profile.js');
+</script>
+</body>
+</html>

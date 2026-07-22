@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Signalements — SIOU</title>
+  <meta name="description" content="Modération des signalements laissés sur les réponses de l'assistant (réservé aux administrateurs).">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/00-variables.css">
+  <link rel="stylesheet" href="/assets/css/01-base.css">
+  <link rel="stylesheet" href="/assets/css/02-layout.css">
+  <link rel="stylesheet" href="/assets/css/03-components.css">
+  <link rel="stylesheet" href="/assets/css/04-chat.css">
+  <link rel="stylesheet" href="/assets/css/05-animations.css">
+  <link rel="stylesheet" href="/assets/css/06-responsive.css">
+</head>
+<body data-page="feedbacks" data-require-role="admin">
+  <a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+  <div class="app-shell">
+    <div data-component="sidebar"></div>
+
+    <div class="content">
+      <div data-component="topbar"></div>
+
+      <main id="main-content" class="page">
+        <div class="page__header">
+          <div>
+            <p class="page__eyebrow">Administration</p>
+            <h1 class="page__title">Signalements</h1>
+            <p class="page__desc">Retours laissés sur les réponses de l'assistant.</p>
+          </div>
+        </div>
+
+        <div class="documents-toolbar">
+          <div class="field documents-toolbar__search">
+            <label for="feedback-search" class="sr-only">Rechercher un signalement</label>
+            <input id="feedback-search" type="search" class="input" placeholder="Rechercher dans les commentaires..."
+              data-search-input data-search-target="[data-feedback-table]" data-search-item="[data-search-item]">
+          </div>
+        </div>
+
+        <div class="card" data-feedback-table>
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="text-align:left; border-bottom:1px solid var(--color-border);">
+                <th scope="col" style="padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); color: var(--color-text-tertiary); text-transform:uppercase;">Note</th>
+                <th scope="col" style="padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); color: var(--color-text-tertiary); text-transform:uppercase;">Commentaire</th>
+                <th scope="col" style="padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); color: var(--color-text-tertiary); text-transform:uppercase;">Conversation</th>
+                <th scope="col" style="padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); color: var(--color-text-tertiary); text-transform:uppercase;">Date</th>
+                <th scope="col" style="padding: var(--sp-3) var(--sp-4); font-size: var(--fs-xs); color: var(--color-text-tertiary); text-transform:uppercase;"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="5" style="padding: var(--sp-6); color: var(--color-text-secondary);">Chargement…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" data-search-empty hidden>
+          <svg class="empty-state__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <h3 class="empty-state__title">Aucun signalement</h3>
+          <p>Aucun retour n'a encore été laissé sur les réponses.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module">
+    // Charger le script principal d'abord (garde d'auth + RBAC de page)
+    await import('/assets/js/main.js');
+
+    // Charger les composants partagés (sidebar, topbar)
+    const { loadSharedComponents } = await import('/assets/js/modules/component-loader.js');
+    await loadSharedComponents();
+
+    // Contrôleur de la modération des signalements
+    await import('/assets/js/modules/feedbacks-admin.js');
+  </script>
+</body>
+</html>

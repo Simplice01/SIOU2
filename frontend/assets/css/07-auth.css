@@ -1,0 +1,489 @@
+/* ==========================================================================
+   SIOU - Page d'authentification
+   Feuille chargée uniquement par login.html. N'affecte aucune autre page.
+   100 % basée sur les design tokens (00-variables.css).
+   ========================================================================== */
+
+.auth {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* ==========================================================================
+   Panneau de marque (gauche) — hero institutionnel « premium »
+   Fond navy profond, constant en clair comme en sombre (le texte blanc reste
+   lisible) : c'est un panneau vitrine, pas une surface applicative.
+   ========================================================================== */
+.auth__brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-8);
+  padding: clamp(var(--sp-8), 5vw, var(--sp-16)) clamp(var(--sp-6), 4vw, var(--sp-12));
+  overflow: hidden;
+  isolation: isolate;
+  color: #eaf1f8;
+  background:
+    radial-gradient(130% 120% at 88% -12%, #2c5f8a 0%, transparent 55%),
+    radial-gradient(120% 130% at -5% 112%, #143a58 0%, transparent 48%),
+    linear-gradient(158deg, #1c3f61 0%, #102a41 52%, #0a1c2c 100%);
+}
+[data-theme='dark'] .auth__brand {
+  color: #e7eef6;
+  background:
+    radial-gradient(130% 120% at 88% -12%, #244f76 0%, transparent 55%),
+    radial-gradient(120% 130% at -5% 112%, #0e2740 0%, transparent 48%),
+    linear-gradient(158deg, #122c44 0%, #0a1b2a 58%, #06121d 100%);
+}
+
+/* Fil tricolore signature, en haut du panneau. */
+.auth__brand::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--gradient-signature);
+  z-index: 3;
+}
+
+/* Vignette basse : profondeur, ancre la composition. */
+.auth__brand::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(120% 80% at 50% 120%, rgba(0, 0, 0, 0.35) 0%, transparent 60%);
+}
+
+/* ---- Couche décorative (halos + constellation) ---- */
+.auth__brand-fx {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.auth__brand-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(64px);
+}
+.auth__brand-glow--a {
+  width: 360px;
+  height: 360px;
+  top: -90px;
+  right: -70px;
+  background: radial-gradient(circle, rgba(96, 165, 220, 0.55) 0%, transparent 70%);
+  animation: brand-drift-a 24s var(--ease-standard) infinite alternate;
+}
+.auth__brand-glow--b {
+  /* Rappel discret de l'or du drapeau — signature, jamais en aplat. */
+  width: 320px;
+  height: 320px;
+  bottom: -110px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(228, 180, 41, 0.20) 0%, transparent 70%);
+  animation: brand-drift-b 30s var(--ease-standard) infinite alternate;
+}
+
+.auth__brand-net {
+  position: absolute;
+  top: 50%;
+  right: -6%;
+  width: min(88%, 560px);
+  height: auto;
+  transform: translateY(-50%);
+  opacity: 0.55;
+}
+.auth__brand-net-rings circle {
+  fill: none;
+  opacity: 0.5;
+}
+.auth__brand-node {
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
+}
+.auth__brand-node--hub { transform-box: fill-box; transform-origin: center; animation: brand-hub 4.5s var(--ease-standard) infinite; }
+.auth__brand-node--tw { animation: brand-twinkle 3.6s var(--ease-standard) infinite; }
+
+/* Révélation douce et orchestrée du contenu. */
+.auth__brand-top { animation: fade-in var(--dur-slow) var(--ease-standard) 60ms backwards; }
+.auth__brand-body { animation: fade-in var(--dur-slow) var(--ease-standard) 140ms backwards; }
+.auth__brand-foot { animation: fade-in var(--dur-slow) var(--ease-standard) 220ms backwards; }
+
+/* ---- En-tête : marque + institution ---- */
+.auth__brand-top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+
+.auth__brand-mark {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  letter-spacing: 0.02em;
+  color: #fff;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.20), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 22px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px);
+}
+/* Liseré tricolore signature sous la marque. */
+.auth__brand-mark::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-signature);
+  opacity: 0.9;
+}
+
+.auth__brand-org {
+  font-size: var(--fs-xs);
+  line-height: var(--lh-tight);
+  color: rgba(255, 255, 255, 0.80);
+  max-width: 24ch;
+}
+
+/* ---- Corps : accroche ---- */
+.auth__brand-body {
+  max-width: 40ch;
+}
+
+.auth__brand-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  margin-bottom: var(--sp-4);
+}
+/* Petit tiret tricolore devant l'eyebrow. */
+.auth__brand-eyebrow::before {
+  content: '';
+  width: 22px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-signature);
+}
+
+.auth__brand-title {
+  font-family: var(--font-display);
+  /* Couleur explicite : `h1` reçoit --color-text via 01-base.css, il faut donc
+     forcer le blanc pour rester lisible sur le fond navy (l'héritage ne suffit pas). */
+  color: #f4f8fc;
+  font-size: clamp(1.9rem, 3vw, var(--fs-3xl));
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.01em;
+  margin-bottom: var(--sp-4);
+  text-wrap: balance;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, 0.22);
+}
+
+.auth__brand-text {
+  font-size: var(--fs-md);
+  line-height: var(--lh-relaxed);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+/* ---- Points de valeur ---- */
+.auth__brand-features {
+  list-style: none;
+  margin: var(--sp-8) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  max-width: 36ch;
+}
+
+.auth__brand-feature {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.auth__brand-feature-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  color: #dceaf6;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+.auth__brand-feature-icon svg { width: 17px; height: 17px; }
+
+/* ---- Pied : accès ---- */
+.auth__brand-foot {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.auth__brand-status {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5);
+  animation: brand-pulse 2.6s var(--ease-standard) infinite;
+}
+
+/* ---- Animations décoratives (désactivées via prefers-reduced-motion) ---- */
+@keyframes brand-drift-a {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(-26px, 22px); }
+}
+@keyframes brand-drift-b {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(30px, -20px); }
+}
+@keyframes brand-twinkle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+@keyframes brand-hub {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.75; transform: scale(1.35); }
+}
+@keyframes brand-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+  70%  { box-shadow: 0 0 0 7px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+/* ---- Panneau formulaire (droite) ---- */
+.auth__panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-8) var(--sp-6);
+}
+
+.auth__card {
+  width: 100%;
+  max-width: 400px;
+  animation: fade-in var(--dur-slow) var(--ease-standard) both;
+}
+
+.auth__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-8);
+}
+
+.auth__logo img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+}
+
+.auth__logo-fallback {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-xl);
+  color: var(--color-primary);
+}
+
+.auth__heading {
+  font-family: var(--font-display);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: var(--lh-tight);
+  margin-bottom: var(--sp-2);
+}
+
+.auth__subheading {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--lh-normal);
+  margin-bottom: var(--sp-8);
+}
+
+.auth-form .field:last-of-type {
+  margin-bottom: var(--sp-5);
+}
+
+/* ---- Champ mot de passe avec bouton afficher/masquer ---- */
+.auth-password {
+  position: relative;
+}
+
+.auth-password .input {
+  padding-right: calc(var(--sp-4) + 40px);
+}
+
+.auth-password__toggle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 44px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease-standard);
+}
+
+.auth-password__toggle:hover { color: var(--color-text); }
+.auth-password__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.auth-password__toggle svg { width: 18px; height: 18px; }
+.auth-password__toggle .icon-eye-off { display: none; }
+.auth-password__toggle.is-revealed .icon-eye { display: none; }
+.auth-password__toggle.is-revealed .icon-eye-off { display: block; }
+
+/* ---- Options (se souvenir / mot de passe oublié) ---- */
+.auth-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+  font-size: var(--fs-sm);
+}
+
+.auth-options__remember {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-options__remember input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.auth-options__link {
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.auth-options__link:hover { text-decoration: underline; }
+
+/* ---- Message d'erreur intégré ---- */
+.auth-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-5);
+  font-size: var(--fs-sm);
+  color: var(--color-danger);
+  background: var(--color-danger-subtle);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  animation: scale-in var(--dur-fast) var(--ease-standard) both;
+}
+.auth-error[hidden] { display: none; }
+
+/* ---- Bouton en cours de chargement ---- */
+.auth-form .btn.is-loading {
+  color: transparent;
+  pointer-events: none;
+  position: relative;
+}
+.auth-form .btn.is-loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+.auth__legal {
+  margin-top: var(--sp-8);
+  font-size: var(--fs-xs);
+  color: var(--color-text-tertiary);
+  text-align: center;
+  line-height: var(--lh-normal);
+}
+
+/* ---- Responsive : tablette ---- */
+@media (max-width: 1024px) {
+  .auth { grid-template-columns: 1fr; }
+
+  .auth__brand {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-6);
+    padding: var(--sp-6) var(--sp-8);
+  }
+  .auth__brand-body { max-width: none; }
+  .auth__brand-title { font-size: var(--fs-xl); margin-bottom: var(--sp-2); }
+  .auth__brand-text,
+  .auth__brand-foot,
+  .auth__brand-org,
+  .auth__brand-features,
+  .auth__brand-net { display: none; }
+  .auth__brand::after { display: none; }
+  .auth__brand-mark { width: 44px; height: 44px; font-size: var(--fs-md); }
+}
+
+/* ---- Responsive : mobile ---- */
+@media (max-width: 600px) {
+  .auth__brand {
+    padding: var(--sp-5) var(--sp-5);
+  }
+  .auth__brand-eyebrow { display: none; }
+  .auth__brand-title { font-size: var(--fs-lg); margin-bottom: 0; }
+
+  .auth__panel { padding: var(--sp-6) var(--sp-4); }
+  .auth__logo { margin-bottom: var(--sp-6); }
+  .auth__heading { font-size: var(--fs-xl); }
+  .auth__subheading { margin-bottom: var(--sp-6); }
+
+  .auth-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sp-3);
+  }
+}

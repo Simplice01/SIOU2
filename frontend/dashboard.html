@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tableau de bord - SIOU</title>
+  <meta name="description" content="SIOU - Système Intelligent d'Orientation des Usagers. Tableau de bord de suivi des démarches administratives.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Sora:wght@400;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/00-variables.css">
+  <link rel="stylesheet" href="/assets/css/01-base.css">
+  <link rel="stylesheet" href="/assets/css/02-layout.css">
+  <link rel="stylesheet" href="/assets/css/03-components.css">
+  <link rel="stylesheet" href="/assets/css/04-chat.css">
+  <link rel="stylesheet" href="/assets/css/05-animations.css">
+  <link rel="stylesheet" href="/assets/css/06-responsive.css">
+</head>
+<body data-page="dashboard">
+  <a class="skip-link" href="#main-content">Aller au contenu principal</a>
+
+  <div class="app-shell">
+    <div data-component="sidebar"></div>
+
+    <div class="content">
+      <div data-component="topbar"></div>
+
+      <main id="main-content" class="page" data-searchable-region>
+        <div class="page__header">
+          <div>
+            <p class="page__eyebrow">Espace agent</p>
+            <h1 class="page__title" data-greeting>Bonjour</h1>
+            <p class="page__desc">Voici l'état de vos échanges et de la base documentaire aujourd'hui.</p>
+          </div>
+          <a class="btn btn--primary" href="/pages/chat.html">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            Nouvelle conversation
+          </a>
+        </div>
+
+        <!-- Statistiques -->
+        <section class="grid grid--2 dashboard-stats" aria-label="Statistiques clés">
+          <div class="card">
+            <div class="card__header">
+              <span class="card__icon-wrap">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </span>
+            </div>
+            <p class="stat-card__value" data-stat="conversations-value">—</p>
+            <p class="stat-card__label">Conversations ce mois-ci</p>
+            <span class="stat-card__delta stat-card__delta--up" data-stat="conversations-delta"></span>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <span class="card__icon-wrap card__icon-wrap--success">
+                <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </span>
+            </div>
+            <p class="stat-card__value" data-stat="documents-value">—</p>
+            <p class="stat-card__label">Documents indexés</p>
+            <span class="stat-card__delta stat-card__delta--up" data-stat="documents-delta"></span>
+          </div>
+
+        </section>
+
+        <section class="grid">
+          <!-- Répartition par catégorie -->
+          <div class="card">
+            <div class="card__header">
+              <h2>Répartition des documents</h2>
+            </div>
+            <ul class="progress-list" data-doc-status-list>
+              <li class="progress-list__item"><span style="color: var(--color-text-tertiary);">Chargement…</span></li>
+            </ul>
+          </div>
+        </section>
+      </main>
+
+      <div class="signature-thread" aria-hidden="true"></div>
+    </div>
+  </div>
+
+    <script type="module">
+    // Charger le script principal d'abord (il enregistre son écouteur
+    // sur 'siou:components-ready' avant que les composants soient injectés)
+    await import('/assets/js/main.js');
+
+    // Charger les composants partagés (sidebar, topbar)
+    const { loadSharedComponents } = await import('/assets/js/modules/component-loader.js');
+    await loadSharedComponents();
+
+    // Contrôleur du tableau de bord (statistiques réelles via /api/stats)
+    await import('/assets/js/modules/dashboard.js');
+  </script>
+</body>
+</html>

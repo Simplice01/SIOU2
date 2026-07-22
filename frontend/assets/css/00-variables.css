@@ -1,0 +1,141 @@
+/* ==========================================================================
+   SIOU - Design Tokens
+   Système Intelligent d'Orientation des Usagers
+   Ministère de la Transformation Digitale et de l'Innovation - Bénin
+   ========================================================================== */
+
+:root {
+  /* ---- Couleurs de marque (dérivées du drapeau, usage discret) ---- */
+  --color-benin-green: #0a8754;
+  --color-benin-yellow: #e4b429;
+  --color-benin-red: #c6373c;
+
+  /* ---- Palette neutre (mode clair) ---- */
+  --color-bg: #fafaf8;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle: #f2f3f1;
+  --color-border: #e2e5e9;
+  --color-border-strong: #cdd2d8;
+  --color-text: #171b21;
+  --color-text-secondary: #5b6472;
+  --color-text-tertiary: #6b7480; /* contraste ajusté pour WCAG AA (texte normal) sur --color-bg */
+  --color-text-inverse: #fafaf8;
+
+  /* ---- Couleurs sémantiques ---- */
+  --color-primary: #1a3a5a;         /* bleu institutionnel plus profond */
+  --color-primary-hover: #142d45;
+  --color-primary-subtle: #e8f0f5;
+  --color-success: #006644;          /* vert institutionnel plus sobre */
+  --color-success-subtle: #e6f2ec;
+  --color-warning: #cc9900;         /* or institutionnel */
+  --color-warning-subtle: #f8f3e0;
+  --color-danger: #990000;          /* rouge institutionnel plus profond */
+  --color-danger-subtle: #f8e6e6;
+  --color-info: #005588;            /* bleu info plus professionnel */
+  --color-info-subtle: #e6f0f6;
+
+  /* ---- Dégradé signature (fil tricolore, usage minimal) ---- */
+  --gradient-signature: linear-gradient(90deg, var(--color-benin-green) 0%, var(--color-benin-yellow) 50%, var(--color-benin-red) 100%);
+
+/* ---- Typographie ---- */
+/* Titres : serif « premium/institutionnel » (Fraunces, à optical sizing).
+   UI compacte (marque, petits titres) : conserve Sora, plus lisible en petit.
+   Corps : Inter. */
+--font-display: 'Fraunces', 'Sora', Georgia, 'Times New Roman', serif;
+--font-ui: 'Sora', 'Inter', system-ui, sans-serif;
+--font-body: 'Inter', system-ui, -apple-system, sans-serif;
+--font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+
+/* Échelle typographique améliorée pour meilleure lisibilité */
+--fs-xs: 0.8rem;          /* 12.8px - Augmenté de 0.05rem */
+--fs-sm: 0.875rem;        /* 14px - Augmenté de 0.0625rem */
+--fs-base: 1rem;          /* 16px - Augmenté de 0.0625rem */
+--fs-md: 1.125rem;        /* 18px - Augmenté de 0.0625rem */
+--fs-lg: 1.25rem;         /* 20px - Sans changement */
+--fs-xl: 1.5rem;          /* 24px - Sans changement */
+--fs-2xl: 2rem;           /* 32px - Augmenté de 0.125rem */
+--fs-3xl: 2.5rem;         /* 40px - Augmenté de 0.25rem */
+
+/* Interlignage amélioré pour meilleure lisibilité */
+--lh-tight: 1.25;         /* Augmenté de 0.05 */
+--lh-normal: 1.6;         /* Augmenté de 0.1 */
+--lh-relaxed: 1.8;       /* Augmenté de 0.1 */
+
+  /* ---- Espacements (échelle 4px) ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* ---- Rayons & ombres ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Ombres à deux couches (lumière ambiante + directionnelle) pour une
+     profondeur « premium » plus réaliste qu'une ombre plate. */
+  --shadow-sm: 0 1px 1px rgba(15, 27, 45, 0.04), 0 1px 2px rgba(15, 27, 45, 0.06);
+  --shadow-md: 0 2px 4px rgba(15, 27, 45, 0.05), 0 6px 16px rgba(15, 27, 45, 0.09);
+  --shadow-lg: 0 4px 8px rgba(15, 27, 45, 0.06), 0 16px 40px rgba(15, 27, 45, 0.14);
+  --shadow-focus: 0 0 0 3px rgba(15, 61, 85, 0.25);
+
+  /* ---- Transitions ---- */
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-normal: 200ms;
+  --dur-slow: 340ms;
+
+  /* ---- Structure ---- */
+  --sidebar-width: 272px;
+  --sidebar-width-collapsed: 76px;
+  --header-height: 72px;
+  --z-header: 100;
+  --z-sidebar: 90;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-tooltip: 1200;
+}
+
+/* ---- Mode sombre ---- */
+[data-theme='dark'] {
+  --color-bg: #10151c;
+  --color-bg-elevated: #171e28;
+  --color-bg-subtle: #1c2430;
+  --color-border: #2a3440;
+  --color-border-strong: #3a4655;
+  --color-text: #eef1f5;
+  --color-text-secondary: #a3adbb;
+  --color-text-tertiary: #74808f;
+  --color-text-inverse: #10151c;
+
+  --color-primary: #4f8fb3;
+  --color-primary-hover: #6ba3c4;
+  --color-primary-subtle: #1a2c36;
+  --color-success-subtle: #10281f;
+  --color-warning-subtle: #2c2513;
+  --color-danger-subtle: #2c1517;
+  --color-info-subtle: #142631;
+
+  --shadow-focus: 0 0 0 3px rgba(79, 143, 179, 0.35); /* alignée sur le --color-primary du mode sombre */
+
+  --shadow-sm: 0 1px 1px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3), 0 8px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 10px rgba(0, 0, 0, 0.35), 0 20px 48px rgba(0, 0, 0, 0.5);
+}
+
+/* ---- Respect des préférences de mouvement réduit ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
