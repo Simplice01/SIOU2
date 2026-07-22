@@ -23,6 +23,7 @@ except ModuleNotFoundError:
 from .config_audio import settings_audio
 
 SUPPORTED_FORMATS = [".mp3", ".mp4", ".mpeg", ".mpga", ".m4a", ".wav", ".webm", ".ogg"]
+OPENAI_TRANSCRIPTION_FALLBACK_MODELS = ["gpt-4o-mini-transcribe", "gpt-4o-transcribe", "whisper-1"]
 
 
 class AudioProcessingError(Exception):
@@ -111,33 +112,79 @@ def transcribe_audio_file(audio_path: str, language: Optional[str] = None) -> st
 
 def transcribe_audio_file_with_openai(audio_path: str, language: Optional[str] = None) -> str:
     """Transcrit via une API OpenAI-compatible quand Whisper local n'est pas installe."""
-    if not settings.llm_api_key:
-        raise AudioProcessingError("Transcription audio indisponible : LLM_API_KEY manquant.")
+    api_key = _openai_api_key()
+    if not api_key:
+        raise AudioProcessingError("Transcription audio indisponible : LLM_API_KEY ou OPENAI_API_KEY manquant.")
 
     endpoint = settings.llm_base_url.rstrip("/") + "/audio/transcriptions"
-    data = {"model": settings.stt_model}
-    if language:
-        data["language"] = language
+    models = _transcription_models_to_try(settings.stt_model)
+    errors: list[str] = []
 
+    for model in models:
+        data = {"model": model}
+        if language:
+            data["language"] = language
+
+        try:
+            with open(audio_path, "rb") as audio_file:
+                files = {"file": (Path(audio_path).name, audio_file, _content_type(audio_path))}
+                response = httpx.post(
+                    endpoint,
+                    headers={"Authorization": f"Bearer {api_key}"},
+                    data=data,
+                    files=files,
+                    timeout=settings.llm_timeout,
+                )
+            response.raise_for_status()
+            payload = response.json()
+            text = (payload.get("text") or "").strip()
+            if text:
+                return text
+            errors.append(f"{model}: transcription vide")
+        except httpx.HTTPStatusError as e:
+            detail = _response_error_detail(e.response)
+            errors.append(f"{model}: HTTP {e.response.status_code} - {detail}")
+            if e.response.status_code not in {403, 404}:
+                break
+        except httpx.HTTPError as e:
+            errors.append(f"{model}: {e}")
+            break
+
+    raise AudioProcessingError("Echec de la transcription audio : " + " | ".join(errors))
+
+
+def _openai_api_key() -> str:
+    return (settings.llm_api_key or os.getenv("OPENAI_API_KEY") or "").strip().strip("\"'")
+
+
+def _transcription_models_to_try(configured_model: str) -> list[str]:
+    models = [configured_model, *OPENAI_TRANSCRIPTION_FALLBACK_MODELS]
+    return [model for model in dict.fromkeys(model.strip() for model in models if model.strip())]
+
+
+def _content_type(audio_path: str) -> str:
+    return {
+        ".mp3": "audio/mpeg",
+        ".mp4": "audio/mp4",
+        ".mpeg": "audio/mpeg",
+        ".mpga": "audio/mpeg",
+        ".m4a": "audio/mp4",
+        ".wav": "audio/wav",
+        ".webm": "audio/webm",
+        ".ogg": "audio/ogg",
+    }.get(Path(audio_path).suffix.lower(), "application/octet-stream")
+
+
+def _response_error_detail(response: httpx.Response) -> str:
     try:
-        with open(audio_path, "rb") as audio_file:
-            files = {"file": (Path(audio_path).name, audio_file)}
-            response = httpx.post(
-                endpoint,
-                headers={"Authorization": f"Bearer {settings.llm_api_key}"},
-                data=data,
-                files=files,
-                timeout=settings.llm_timeout,
-            )
-        response.raise_for_status()
         payload = response.json()
-    except httpx.HTTPError as e:
-        raise AudioProcessingError(f"Echec de la transcription audio : {e}") from e
+    except ValueError:
+        return response.text[:500]
 
-    text = (payload.get("text") or "").strip()
-    if not text:
-        raise AudioProcessingError("Transcription audio vide.")
-    return text
+    error = payload.get("error") if isinstance(payload, dict) else None
+    if isinstance(error, dict):
+        return str(error.get("message") or error)
+    return str(payload)[:500]
 
 
 def process_audio_file(

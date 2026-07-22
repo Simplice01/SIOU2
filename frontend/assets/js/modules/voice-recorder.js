@@ -115,7 +115,14 @@ async function transcribeAudio(audioBlob, micButton, composerInput) {
         });
 
         if (!response.ok) {
-            throw new Error(`Réponse serveur invalide (${response.status})`);
+            let detail = '';
+            try {
+                const payload = await response.json();
+                detail = payload?.detail ? ` : ${payload.detail}` : '';
+            } catch {
+                detail = '';
+            }
+            throw new Error(`Réponse serveur invalide (${response.status})${detail}`);
         }
 
         const data = await response.json();
@@ -134,7 +141,7 @@ async function transcribeAudio(audioBlob, micButton, composerInput) {
         console.error('[voice-recorder] Échec de la transcription :', err);
         showToast({
             title: 'Transcription impossible',
-            text: 'Une erreur est survenue. Vous pouvez réessayer ou écrire votre question directement.',
+            text: err?.message || 'Une erreur est survenue. Vous pouvez réessayer ou écrire votre question directement.',
             type: 'danger',
         });
     } finally {
