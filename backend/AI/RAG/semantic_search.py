@@ -122,26 +122,20 @@ async def retrieve_hybrid_chunks(
     if not words:
         return []
 
-    strict_words = words[:6]
-    relaxed_required = min(len(words), 2) if len(words) > 1 else 1
-    required_terms = len(strict_words) if len(strict_words) <= 3 else max(3, len(strict_words) - 1)
-
-    rows = await _run_search(
-        db_session=db_session,
-        words=strict_words,
-        required_terms=required_terms,
-        top_k=top_k,
-    )
-    if not rows and relaxed_required < required_terms:
+    rows = []
+    for plan_words, required_terms in _search_plans(query_text, words):
         rows = await _run_search(
             db_session=db_session,
-            words=words,
-            required_terms=relaxed_required,
+            words=plan_words,
+            required_terms=required_terms,
             top_k=top_k,
         )
+        if rows:
+            break
     if not rows:
         return []
 
+    rows = _rerank_rows(query_text, rows)
     max_score = max(float(row["score"] or 0.0) for row in rows) or 1.0
     return [
         {
@@ -202,3 +196,101 @@ def _significant_words(value: str) -> list[str]:
     normalized = _strip_accents(value.lower())
     words = re.findall(r"[a-z0-9]{4,}", normalized)
     return [word for word in dict.fromkeys(words) if word not in stop_words][:12]
+
+
+def _search_plans(query_text: str, words: list[str]) -> list[tuple[list[str], int]]:
+    """Construit des recherches successives, du plus strict au plus intentionnel.
+
+    La première recherche conserve le comportement historique. Les suivantes
+    reformulent les intentions courantes d'un usager (adresse, rôle, missions)
+    en termes réellement présents dans les documents, sans élargir au-delà du
+    corpus : elles aident seulement PostgreSQL à trouver le bon chunk.
+    """
+    strict_words = words[:6]
+    relaxed_required = min(len(words), 2) if len(words) > 1 else 1
+    required_terms = len(strict_words) if len(strict_words) <= 3 else max(3, len(strict_words) - 1)
+
+    plans: list[tuple[list[str], int]] = [(strict_words, required_terms)]
+    if relaxed_required < required_terms:
+        plans.append((words, relaxed_required))
+
+    normalized_query = _strip_accents(query_text.lower())
+    expanded_words = _expand_intent_words(normalized_query, words)
+    if expanded_words != words:
+        # Une recherche intentionnelle doit rester exigeante sur le sujet
+        # principal, mais ne doit pas échouer parce que l'usager dit "trouve"
+        # là où le document dit "adresse" ou "située".
+        plans.append((expanded_words[:10], min(3, max(1, len(expanded_words) // 2))))
+        plans.append((expanded_words[:10], min(2, len(expanded_words))))
+
+    deduped: list[tuple[list[str], int]] = []
+    seen: set[tuple[tuple[str, ...], int]] = set()
+    for plan_words, required in plans:
+        if not plan_words:
+            continue
+        key = (tuple(plan_words), required)
+        if key not in seen:
+            deduped.append((plan_words, required))
+            seen.add(key)
+    return deduped
+
+
+def _expand_intent_words(normalized_query: str, words: list[str]) -> list[str]:
+    expanded = list(words)
+    word_set = set(words)
+
+    def add(*terms: str) -> None:
+        for term in terms:
+            if term not in expanded:
+                expanded.append(term)
+
+    asks_location = any(term in word_set for term in {"trouve", "situe", "situee", "adresse", "localisation"})
+    asks_role = any(term in word_set for term in {"role", "mission", "missions", "attribution", "attributions"})
+    asks_action = "que fait" in normalized_query or "a quoi sert" in normalized_query
+    asks_services = any(term in word_set for term in {"service", "services", "composee", "composition"})
+
+    if asks_location:
+        add("adresse", "localisation", "situee", "immeuble", "quartier", "cotonou")
+    if asks_role or asks_action:
+        add(
+            "role",
+            "mission",
+            "missions",
+            "attributions",
+            "charge",
+            "operateur",
+            "infrastructures",
+            "telecommunications",
+            "numeriques",
+        )
+    if asks_services:
+        add("services", "composee", "secretariat", "direction", "administration")
+
+    return expanded[:12]
+
+
+def _rerank_rows(query_text: str, rows: list[Any]) -> list[Any]:
+    normalized_query = _strip_accents(query_text.lower())
+
+    subject_phrases = [
+        "agence des systemes d'information et du numerique",
+        "direction du numerique",
+        "direction de la digitalisation",
+        "sbin",
+        "asin",
+    ]
+    expected_phrases = [phrase for phrase in subject_phrases if phrase in normalized_query]
+    if not expected_phrases:
+        return rows
+
+    def rank(row: Any) -> tuple[float, float]:
+        content = _strip_accents(str(row["content"]).lower())
+        phrase_boost = sum(1.0 for phrase in expected_phrases if phrase in content)
+        acronym_boost = 0.0
+        if "sbin" in expected_phrases and re.search(r"\bsbin\b", content):
+            acronym_boost += 0.5
+        if "asin" in expected_phrases and re.search(r"\basin\b", content):
+            acronym_boost += 0.5
+        return (phrase_boost + acronym_boost, float(row["score"] or 0.0))
+
+    return sorted(rows, key=rank, reverse=True)
