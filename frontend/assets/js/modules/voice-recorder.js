@@ -7,9 +7,10 @@
 
 import { qs, uid } from './utils.js';
 import { showToast } from './toast.js';
+import { API_BASE } from './api.js';
 
 // Adapter cette URL à l'endpoint réel exposé par le backend SIOU.
-const TRANSCRIBE_ENDPOINT = '/api/speech-to-text';
+const TRANSCRIBE_ENDPOINT = `${API_BASE}/speech-to-text`;
 
 let mediaRecorder = null;
 let audioChunks = [];

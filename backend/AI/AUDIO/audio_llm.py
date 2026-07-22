@@ -11,6 +11,10 @@ import tempfile
 from pathlib import Path
 from typing import Optional
 
+import httpx
+
+from backend.core.config import settings
+
 try:
     from faster_whisper import WhisperModel
 except ModuleNotFoundError:
@@ -88,6 +92,9 @@ def transcribe_audio_file(audio_path: str, language: Optional[str] = None) -> st
     """
     validate_audio_file(audio_path)
 
+    if WhisperModel is None:
+        return transcribe_audio_file_with_openai(audio_path, language=language)
+
     try:
         model = get_model()
         segments, _info = model.transcribe(
@@ -100,6 +107,37 @@ def transcribe_audio_file(audio_path: str, language: Optional[str] = None) -> st
         raise
     except Exception as e:
         raise AudioProcessingError(f"Échec de la transcription audio : {e}")
+
+
+def transcribe_audio_file_with_openai(audio_path: str, language: Optional[str] = None) -> str:
+    """Transcrit via une API OpenAI-compatible quand Whisper local n'est pas installe."""
+    if not settings.llm_api_key:
+        raise AudioProcessingError("Transcription audio indisponible : LLM_API_KEY manquant.")
+
+    endpoint = settings.llm_base_url.rstrip("/") + "/audio/transcriptions"
+    data = {"model": settings.stt_model}
+    if language:
+        data["language"] = language
+
+    try:
+        with open(audio_path, "rb") as audio_file:
+            files = {"file": (Path(audio_path).name, audio_file)}
+            response = httpx.post(
+                endpoint,
+                headers={"Authorization": f"Bearer {settings.llm_api_key}"},
+                data=data,
+                files=files,
+                timeout=settings.llm_timeout,
+            )
+        response.raise_for_status()
+        payload = response.json()
+    except httpx.HTTPError as e:
+        raise AudioProcessingError(f"Echec de la transcription audio : {e}") from e
+
+    text = (payload.get("text") or "").strip()
+    if not text:
+        raise AudioProcessingError("Transcription audio vide.")
+    return text
 
 
 def process_audio_file(

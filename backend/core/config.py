@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.2
     llm_max_tokens: int = 512
     llm_timeout: float = 60
+    stt_model: str = "whisper-1"
 
     rag_top_k: int = 5
     rag_rrf_k: int = 60
