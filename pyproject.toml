@@ -16,7 +16,7 @@ dependencies = [
     "pypdf>=6.14.2",
     "python-jose>=3.5.0",
     "sqlalchemy>=2.0.51",
-    "uvicorn>=2.1.4",
+    "uvicorn[standard]>=0.30.0,<1.0.0",
 ]
 
 [dependency-groups]
@@ -30,3 +30,7 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["backend/tests"]
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+exclude = ["frontend*", "version_1*"]
