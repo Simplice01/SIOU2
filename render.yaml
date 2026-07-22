@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: siou2-backend
+    name: siou2
     env: python
     plan: free
     buildCommand: pip install -e .

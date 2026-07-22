@@ -28,7 +28,7 @@ import { storage, session, KEYS } from './storage.js';
 export const API_BASE = (
   window.SIOU_API_BASE ||
   document.documentElement.dataset.apiBase ||
-  (window.location.hostname.endsWith('vercel.app') ? 'https://siou2-backend.onrender.com/api' : '') ||
+  (window.location.hostname.endsWith('vercel.app') ? 'https://siou2.onrender.com/api' : '') ||
   '/api'
 ).replace(/\/+$/, '');
 

@@ -56,7 +56,7 @@ Le fichier `frontend/vercel.json` gere les routes `/`, `/login` et `/dashboard`.
 Par defaut, si le site est sur `*.vercel.app`, le frontend appelle :
 
 ```text
-https://siou2-backend.onrender.com/api
+https://siou2.onrender.com/api
 ```
 
 Si le nom du service Render change, modifier `frontend/assets/js/modules/api.js`.
