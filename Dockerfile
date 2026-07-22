@@ -10,18 +10,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer uv
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY pyproject.toml ./
 
-# Copier les fichiers de dépendances
-COPY pyproject.toml uv.lock ./
+# Install only runtime dependencies from pyproject.toml.
+# uv.lock still contains old heavy AI packages that are not needed by Render.
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -e .
 
-# Installer les dépendances
-RUN uv sync --frozen --no-dev
-
-# Copier le projet
 COPY . .
 
 EXPOSE 8000
 
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000}"]
