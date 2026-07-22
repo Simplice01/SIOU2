@@ -20,6 +20,7 @@ import { formatRelativeDate, escapeHtml } from './utils.js';
 // État du chat
 let isStreaming = false;
 let currentConversationId = null;
+let selectedAttachments = [];
 
 // Initialisation du composant de chat
 export function initChat() {
@@ -64,6 +65,7 @@ export function initChat() {
     // Saisie vocale (bouton micro) - insère le texte transcrit dans composerInput,
     // n'envoie jamais le message automatiquement.
     initVoiceRecorder(composerInput);
+    initAttachmentPicker(composerInput, composerSend);
 
     // Historique des conversations (panneau de gauche) + « Nouvelle conversation »
     initHistorySidebar();
@@ -335,8 +337,92 @@ function pruneEmptyGroups(list) {
 }
 
 // « Nouvelle conversation » : réinitialise le fil courant sans quitter la page.
+function initAttachmentPicker(composerInput, composerSend) {
+    const attachButton = document.querySelector('[data-composer-attach]');
+    const fileInput = document.querySelector('[data-composer-file]');
+    const attachmentList = document.querySelector('[data-composer-attachments]');
+
+    if (!attachButton || !fileInput || !attachmentList) return;
+
+    attachButton.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => {
+        const files = Array.from(fileInput.files || []);
+        if (!files.length) return;
+
+        const existingKeys = new Set(selectedAttachments.map(fileKey));
+        for (const file of files) {
+            if (selectedAttachments.length >= 5) {
+                showToast({
+                    title: 'Limite atteinte',
+                    text: 'Vous pouvez joindre au maximum 5 fichiers par message.',
+                    type: 'warning',
+                });
+                break;
+            }
+            if (!existingKeys.has(fileKey(file))) {
+                selectedAttachments.push(file);
+                existingKeys.add(fileKey(file));
+            }
+        }
+
+        fileInput.value = '';
+        renderAttachments(attachmentList, composerInput, composerSend);
+        showToast({
+            title: 'Fichier joint',
+            text: 'Le fichier est ajouté au message. Écrivez votre question pour l’envoyer à SIOU.',
+            type: 'success',
+        });
+    });
+}
+
+function fileKey(file) {
+    return `${file.name}:${file.size}:${file.lastModified}`;
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} o`;
+    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} Ko`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} Mo`;
+}
+
+function renderAttachments(container, composerInput, composerSend) {
+    container.innerHTML = '';
+    selectedAttachments.forEach((file, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'attachment-chip';
+        chip.innerHTML = `
+            <span class="attachment-chip__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <path d="M14 2v6h6"/>
+                </svg>
+            </span>
+            <span class="attachment-chip__name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</span>
+            <span class="attachment-chip__size">${formatFileSize(file.size)}</span>
+            <button class="attachment-chip__remove" type="button" aria-label="Retirer ${escapeHtml(file.name)}">x</button>
+        `;
+        chip.querySelector('.attachment-chip__remove')?.addEventListener('click', () => {
+            selectedAttachments.splice(index, 1);
+            renderAttachments(container, composerInput, composerSend);
+            composerInput?.focus();
+        });
+        container.appendChild(chip);
+    });
+
+    if (composerSend && composerInput) {
+        composerSend.disabled = composerInput.value.trim() === '';
+    }
+}
+
+function clearAttachments() {
+    selectedAttachments = [];
+    const attachmentList = document.querySelector('[data-composer-attachments]');
+    if (attachmentList) attachmentList.innerHTML = '';
+}
+
 function resetConversation() {
     currentConversationId = null;
+    clearAttachments();
     const chatThread = document.querySelector('.chat-thread__inner');
     if (chatThread) {
         chatThread.querySelectorAll('.message, .thinking-indicator').forEach((el) => el.remove());
@@ -400,16 +486,21 @@ function handleFormSubmit(e) {
     }
 
     const question = composerInput.value.trim();
+    const attachmentNames = selectedAttachments.map((file) => `${file.name} (${formatFileSize(file.size)})`);
+    const questionWithAttachments = attachmentNames.length
+        ? `${question}\n\nFichiers joints : ${attachmentNames.join(', ')}`
+        : question;
 
     // Ajouter le message de l'utilisateur
-    addUserMessage(question);
+    addUserMessage(questionWithAttachments);
 
     // Réinitialiser le champ de saisie
     composerInput.value = '';
+    clearAttachments();
     if (composerSend) composerSend.disabled = true;
 
     // Envoyer la question au backend
-    requestAssistantResponse(question);
+    requestAssistantResponse(questionWithAttachments);
 }
 
 // Ajouter un message utilisateur au fil de conversation
