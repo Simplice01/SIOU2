@@ -21,6 +21,14 @@ def test_role_question_expands_to_mission_terms():
     assert {"sbin", "role", "mission", "attributions", "operateur"}.issubset(expanded)
 
 
+def test_overview_question_expands_to_presentation_terms():
+    words = _significant_words("Parle-moi de l'ASIN")
+
+    expanded = _flatten(_search_plans("Parle-moi de l'ASIN", words))
+
+    assert {"asin", "role", "mission", "attributions", "definition"}.issubset(expanded)
+
+
 def test_unknown_question_keeps_original_terms_only():
     words = _significant_words("Quelle est la couleur du portail ?")
 

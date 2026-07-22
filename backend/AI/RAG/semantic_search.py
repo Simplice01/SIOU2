@@ -247,16 +247,19 @@ def _expand_intent_words(normalized_query: str, words: list[str]) -> list[str]:
     asks_location = any(term in word_set for term in {"trouve", "situe", "situee", "adresse", "localisation"})
     asks_role = any(term in word_set for term in {"role", "mission", "missions", "attribution", "attributions"})
     asks_action = "que fait" in normalized_query or "a quoi sert" in normalized_query
+    asks_overview = _asks_overview(normalized_query, word_set)
     asks_services = any(term in word_set for term in {"service", "services", "composee", "composition"})
 
     if asks_location:
         add("adresse", "localisation", "situee", "immeuble", "quartier", "cotonou")
-    if asks_role or asks_action:
+    if asks_role or asks_action or asks_overview:
         add(
             "role",
             "mission",
             "missions",
             "attributions",
+            "presentation",
+            "definition",
             "charge",
             "operateur",
             "infrastructures",
@@ -267,6 +270,28 @@ def _expand_intent_words(normalized_query: str, words: list[str]) -> list[str]:
         add("services", "composee", "secretariat", "direction", "administration")
 
     return expanded[:12]
+
+
+def _asks_overview(normalized_query: str, word_set: set[str]) -> bool:
+    overview_terms = {
+        "parle",
+        "parler",
+        "presente",
+        "presenter",
+        "explique",
+        "expliquer",
+        "resume",
+        "resumer",
+        "quoi",
+        "definition",
+    }
+    return (
+        bool(word_set & overview_terms)
+        or "c est quoi" in normalized_query
+        or "c'est quoi" in normalized_query
+        or "dis moi" in normalized_query
+        or "dit moi" in normalized_query
+    )
 
 
 def _rerank_rows(query_text: str, rows: list[Any]) -> list[Any]:
@@ -282,6 +307,9 @@ def _rerank_rows(query_text: str, rows: list[Any]) -> list[Any]:
     expected_phrases = [phrase for phrase in subject_phrases if phrase in normalized_query]
     if not expected_phrases:
         return rows
+    query_words = set(re.findall(r"[a-z0-9]{4,}", normalized_query))
+    is_overview = _asks_overview(normalized_query, query_words)
+    asks_location = any(term in query_words for term in {"trouve", "situe", "situee", "adresse", "localisation"})
 
     def rank(row: Any) -> tuple[float, float]:
         content = _strip_accents(str(row["content"]).lower())
@@ -291,6 +319,11 @@ def _rerank_rows(query_text: str, rows: list[Any]) -> list[Any]:
             acronym_boost += 0.5
         if "asin" in expected_phrases and re.search(r"\basin\b", content):
             acronym_boost += 0.5
-        return (phrase_boost + acronym_boost, float(row["score"] or 0.0))
+        intent_boost = 0.0
+        if is_overview:
+            intent_boost += sum(0.35 for term in ("mission", "missions", "attribution", "attributions", "role", "bras operationnel") if term in content)
+        if asks_location:
+            intent_boost += sum(0.35 for term in ("adresse", "localisation", "situee", "immeuble", "quartier") if term in content)
+        return (phrase_boost + acronym_boost + intent_boost, float(row["score"] or 0.0))
 
     return sorted(rows, key=rank, reverse=True)
