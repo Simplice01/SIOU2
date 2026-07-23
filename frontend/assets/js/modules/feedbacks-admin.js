@@ -11,9 +11,10 @@
  * note de 1 sans commentaire ; d'autres notes restent possibles via l'API.
  */
 
-import { listFeedbacks, deleteFeedback } from './feedback-service.js';
+import { listFeedbacks, getFeedback, deleteFeedback } from './feedback-service.js';
 import { messageFromError } from './api.js';
 import { getUser, hasRole } from './auth.js';
+import { initModals, openModal } from './modal.js';
 import { initInstantSearch } from './search.js';
 import { showToast } from './toast.js';
 import { escapeHtml, formatRelativeDate, formatTime } from './utils.js';
@@ -68,9 +69,12 @@ function createRow(feedback) {
   actionsCell.style.cssText = 'padding: var(--sp-4); text-align:right; white-space:nowrap;';
   const currentUser = getUser();
   const canDelete = hasRole('admin', 'ministry_manager') || feedback.user_id === currentUser?.id;
-  actionsCell.innerHTML = canDelete
-    ? '<button class="btn btn--ghost btn--sm" data-feedback-delete type="button">Supprimer</button>'
-    : '<span class="badge badge--neutral">Lecture seule</span>';
+  actionsCell.innerHTML = `
+    <button class="btn btn--ghost btn--sm" data-feedback-view type="button">Voir</button>
+    ${canDelete
+      ? '<button class="btn btn--ghost btn--sm" data-feedback-delete type="button">Supprimer</button>'
+      : '<span class="badge badge--neutral">Lecture seule</span>'}
+  `;
 
   row.append(ratingCell, commentCell, convCell, dateCell, actionsCell);
   return row;
@@ -102,6 +106,55 @@ async function loadFeedbacks(tbody, emptyState) {
       messageFromError(error, 'Impossible de charger les signalements.'),
       'var(--color-danger)',
     );
+  }
+}
+
+function detailRefs() {
+  const overlay = document.getElementById('feedback-detail-modal');
+  return {
+    overlay,
+    body: overlay?.querySelector('[data-feedback-detail]'),
+  };
+}
+
+function detailItem(label, value, options = {}) {
+  const display = value === null || value === undefined || value === '' ? '—' : value;
+  return `
+    <div class="detail-item">
+      <span class="detail-label">${escapeHtml(label)}</span>
+      <span class="detail-value ${options.mono ? 'detail-value--mono' : ''}">${escapeHtml(String(display))}</span>
+    </div>
+  `;
+}
+
+async function openFeedbackDetail(id) {
+  const r = detailRefs();
+  if (!r.overlay || !r.body) return;
+  r.body.innerHTML = '<p style="color: var(--color-text-secondary);">Chargement du signalement...</p>';
+  openModal(r.overlay);
+
+  try {
+    const feedback = await getFeedback(id);
+    r.body.innerHTML = `
+      <div class="detail-summary">
+        ${ratingBadge(feedback.rating).outerHTML}
+        <div>
+          <h3>Signalement sur une réponse SIOU</h3>
+          <p>${escapeHtml(feedback.created_at ? `${formatRelativeDate(feedback.created_at)}, ${formatTime(feedback.created_at)}` : 'Date non disponible')}</p>
+        </div>
+      </div>
+      <div class="detail-grid">
+        ${detailItem('Note', `${Number(feedback.rating) || 0}/5`)}
+        ${detailItem('Commentaire', feedback.comment)}
+        ${detailItem('Conversation', feedback.conversation_id, { mono: true })}
+        ${detailItem('Message', feedback.message_id, { mono: true })}
+        ${detailItem('Utilisateur', feedback.user_id, { mono: true })}
+        ${detailItem('Créé le', feedback.created_at ? new Date(feedback.created_at).toLocaleString('fr-FR') : null)}
+        ${detailItem('ID technique', feedback.id, { mono: true })}
+      </div>
+    `;
+  } catch (error) {
+    r.body.innerHTML = `<p style="color: var(--color-danger);">${escapeHtml(messageFromError(error, 'Impossible de charger le détail du signalement.'))}</p>`;
   }
 }
 
@@ -151,11 +204,14 @@ async function initFeedbacksAdmin() {
 
   await loadFeedbacks(tbody, emptyState);
   initInstantSearch();
+  initModals();
 
   tbody.addEventListener('click', (event) => {
     const row = event.target.closest('tr[data-feedback-id]');
     if (!row) return;
-    if (event.target.closest('[data-feedback-delete]')) {
+    if (event.target.closest('[data-feedback-view]')) {
+      openFeedbackDetail(row.dataset.feedbackId);
+    } else if (event.target.closest('[data-feedback-delete]')) {
       confirmDelete(row, tbody, emptyState);
     }
   });

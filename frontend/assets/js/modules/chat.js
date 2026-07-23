@@ -677,26 +677,69 @@ function createAssistantActions() {
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
         <span>Signaler</span>
     `;
-    reportBtn.addEventListener('click', () => handleReportClick(reportBtn));
+    reportBtn.addEventListener('click', () => openReportPanel(actions, reportBtn));
 
     actions.appendChild(reportBtn);
     return actions;
 }
 
 // Envoi d'un signalement au backend
-async function handleReportClick(button) {
-    button.disabled = true;
+function openReportPanel(actions, button) {
+    if (actions.querySelector('[data-report-panel]')) return;
+    button.hidden = true;
+
+    const panel = document.createElement('form');
+    panel.className = 'message__report-panel';
+    panel.dataset.reportPanel = '';
+    panel.innerHTML = `
+        <div class="message__report-title">Noter cette réponse</div>
+        <div class="message__rating" role="radiogroup" aria-label="Note du signalement">
+            ${[1, 2, 3, 4, 5].map((rating) => `
+                <label class="message__rating-option">
+                    <input type="radio" name="rating" value="${rating}" ${rating === 1 ? 'checked' : ''}>
+                    <span>${'★'.repeat(rating)}</span>
+                </label>
+            `).join('')}
+        </div>
+        <textarea class="textarea message__report-comment" name="comment" rows="2" placeholder="Ajouter un commentaire optionnel..."></textarea>
+        <div class="message__report-actions">
+            <button class="btn btn--ghost btn--sm" type="button" data-report-cancel>Annuler</button>
+            <button class="btn btn--primary btn--sm" type="submit" data-report-submit>Envoyer</button>
+        </div>
+    `;
+
+    panel.querySelector('[data-report-cancel]')?.addEventListener('click', () => {
+        panel.remove();
+        button.hidden = false;
+    });
+
+    panel.addEventListener('submit', (event) => {
+        event.preventDefault();
+        handleReportSubmit(panel, button);
+    });
+
+    actions.appendChild(panel);
+}
+
+async function handleReportSubmit(panel, button) {
+    const submit = panel.querySelector('[data-report-submit]');
+    const rating = Number(new FormData(panel).get('rating')) || 1;
+    const comment = panel.querySelector('[name="comment"]')?.value.trim() || null;
+    if (submit) submit.disabled = true;
     try {
-        await reportAnswer({ conversationId: currentConversationId, rating: 1 });
+        await reportAnswer({ conversationId: currentConversationId, rating, comment });
         const label = button.querySelector('span');
         if (label) label.textContent = 'Signalé';
+        button.hidden = false;
+        button.disabled = true;
+        panel.remove();
         showToast({
             title: 'Merci',
-            text: 'Cette réponse a été signalée pour révision.',
+            text: 'Votre note a été enregistrée pour révision.',
             type: 'success',
         });
     } catch (error) {
-        button.disabled = false;
+        if (submit) submit.disabled = false;
         showToast({
             title: 'Signalement impossible',
             text: messageFromError(error),

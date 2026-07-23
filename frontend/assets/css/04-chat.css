@@ -410,6 +410,7 @@
 /* ---- Actions d'un message (signalement) ---- */
 .message__actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-2);
 }
 
@@ -438,6 +439,66 @@
 .message__action:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+}
+
+.message__report-panel {
+  display: grid;
+  width: min(380px, 100%);
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-sm);
+}
+
+.message__report-title {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+.message__rating {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.message__rating-option {
+  cursor: pointer;
+}
+
+.message__rating-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.message__rating-option span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  font-size: var(--fs-xs);
+}
+
+.message__rating-option input:checked + span {
+  border-color: var(--color-warning);
+  background: var(--color-warning-subtle, rgba(234, 179, 8, 0.14));
+  color: var(--color-warning);
+}
+
+.message__report-comment {
+  min-height: 72px;
+  font-size: var(--fs-sm);
+}
+
+.message__report-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sp-2);
 }
 
 /* ---- Score de confiance (préférence Paramètres) ---- */

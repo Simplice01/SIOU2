@@ -50,6 +50,13 @@ export function listFeedbacks() {
   return apiFetch('/feedbacks');
 }
 
+export function getFeedback(id) {
+  if (hasRole('admin', 'ministry_manager', 'validator')) {
+    return apiFetch(`/admin/feedbacks/${id}`);
+  }
+  return apiFetch(`/feedbacks/${id}`);
+}
+
 /** Supprime un signalement. @returns {Promise<Object>} */
 export function deleteFeedback(id) {
   if (hasRole('admin', 'ministry_manager')) {

@@ -331,6 +331,8 @@
   transition: transform var(--dur-normal) var(--ease-standard);
 }
 
+.modal--wide { max-width: 680px; }
+
 .modal-overlay.is-open .modal { transform: translateY(0) scale(1); }
 
 .modal__header {
@@ -348,6 +350,55 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--sp-3);
+}
+
+.detail-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+
+.detail-summary h3 {
+  margin: 0;
+  font-size: var(--fs-xl);
+}
+
+.detail-summary p {
+  margin: var(--sp-1) 0 0;
+  color: var(--color-text-secondary);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.detail-item {
+  padding: var(--sp-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-subtle);
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: var(--sp-1);
+  color: var(--color-text-tertiary);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+}
+
+.detail-value--mono {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--fs-sm);
 }
 
 /* ---- Toasts ---- */

@@ -18,6 +18,10 @@ export function listUsers() {
   return apiFetch('/admin/users');
 }
 
+export function getAdminUser(id) {
+  return apiFetch(`/admin/users/${id}`);
+}
+
 /** Crée un compte (mot de passe requis, min. 8 caractères). @returns {Promise<Object>} */
 export function createUser(payload) {
   return apiFetch('/admin/users', { method: 'POST', body: payload });

@@ -77,6 +77,8 @@
 /* ---- Mobile (≤ 600px) ---- */
 @media (max-width: 600px) {
   .grid--2, .grid--3, .grid--4 { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-summary { align-items: flex-start; }
 
   .page__header { flex-direction: column; }
 

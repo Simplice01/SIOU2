@@ -11,7 +11,7 @@
  * rétrograder lui-même depuis cette page (évite de se verrouiller dehors).
  */
 
-import { listUsers, createUser, updateUser, deleteUser } from './user-service.js';
+import { listUsers, getAdminUser, createUser, updateUser, deleteUser } from './user-service.js';
 import { messageFromError } from './api.js';
 import { getUser, normalizeRole } from './auth.js';
 import { initModals, openModal, closeModal } from './modal.js';
@@ -87,6 +87,7 @@ function createRow(user) {
   actionsCell.style.cssText = 'padding: var(--sp-4); text-align:right; white-space:nowrap;';
   // Pas de suppression de son propre compte (garde-fou anti-verrouillage).
   actionsCell.innerHTML = `
+    <button class="btn btn--ghost btn--sm" data-user-view type="button">Voir</button>
     <button class="btn btn--ghost btn--sm" data-user-edit type="button">Modifier</button>
     ${isSelf ? '' : '<button class="btn btn--ghost btn--sm" data-user-delete type="button">Supprimer</button>'}
   `;
@@ -191,6 +192,56 @@ function openEditModal(user) {
 
   openModal(r.overlay);
   r.firstName?.focus();
+}
+
+function detailRefs() {
+  const overlay = document.getElementById('user-detail-modal');
+  return {
+    overlay,
+    body: overlay?.querySelector('[data-user-detail]'),
+  };
+}
+
+function detailItem(label, value, options = {}) {
+  const display = value === null || value === undefined || value === '' ? '—' : value;
+  return `
+    <div class="detail-item">
+      <span class="detail-label">${escapeHtml(label)}</span>
+      <span class="detail-value ${options.mono ? 'detail-value--mono' : ''}">${escapeHtml(String(display))}</span>
+    </div>
+  `;
+}
+
+async function openUserDetail(id) {
+  const r = detailRefs();
+  if (!r.overlay || !r.body) return;
+  r.body.innerHTML = '<p style="color: var(--color-text-secondary);">Chargement du détail...</p>';
+  openModal(r.overlay);
+
+  try {
+    const user = await getAdminUser(id);
+    const active = user.is_active !== false ? 'Actif' : 'Désactivé';
+    r.body.innerHTML = `
+      <div class="detail-summary">
+        <div class="avatar avatar--lg">${escapeHtml(((user.first_name || user.username || 'U')[0] || 'U').toUpperCase())}</div>
+        <div>
+          <h3>${escapeHtml(fullName(user) || user.username || 'Utilisateur')}</h3>
+          <p>${escapeHtml(roleLabel(user.role))}</p>
+        </div>
+      </div>
+      <div class="detail-grid">
+        ${detailItem('Identifiant', user.username, { mono: true })}
+        ${detailItem('Prénom', user.first_name)}
+        ${detailItem('Nom', user.last_name)}
+        ${detailItem('Rôle', roleLabel(user.role))}
+        ${detailItem('Statut', active)}
+        ${detailItem('Créé le', user.created_at ? new Date(user.created_at).toLocaleString('fr-FR') : null)}
+        ${detailItem('ID technique', user.id, { mono: true })}
+      </div>
+    `;
+  } catch (error) {
+    r.body.innerHTML = `<p style="color: var(--color-danger);">${escapeHtml(messageFromError(error, "Impossible de charger le détail de l'utilisateur."))}</p>`;
+  }
 }
 
 async function handleSubmit(tbody, emptyState) {
@@ -310,7 +361,9 @@ async function initUsersAdmin() {
   tbody.addEventListener('click', (event) => {
     const row = event.target.closest('tr[data-user-id]');
     if (!row) return;
-    if (event.target.closest('[data-user-edit]')) {
+    if (event.target.closest('[data-user-view]')) {
+      openUserDetail(row.dataset.userId);
+    } else if (event.target.closest('[data-user-edit]')) {
       const user = usersById.get(row.dataset.userId);
       if (user) openEditModal(user);
     } else if (event.target.closest('[data-user-delete]')) {
