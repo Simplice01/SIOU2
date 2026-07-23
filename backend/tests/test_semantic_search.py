@@ -10,7 +10,15 @@ def test_location_question_expands_to_address_terms():
 
     expanded = _flatten(_search_plans("Ou se trouve l'ASIN ?", words))
 
-    assert {"asin", "adresse", "localisation", "immeuble", "cotonou"}.issubset(expanded)
+    assert {"asin", "adresse", "localisation", "siege", "immeuble", "cotonou"}.issubset(expanded)
+
+
+def test_acronym_question_expands_to_official_name_terms():
+    words = _significant_words("Quel est le role de l'ASIN ?")
+
+    expanded = _flatten(_search_plans("Quel est le role de l'ASIN ?", words))
+
+    assert {"asin", "agence", "systemes", "numerique"}.issubset(expanded)
 
 
 def test_role_question_expands_to_mission_terms():

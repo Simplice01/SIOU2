@@ -284,7 +284,7 @@ async def delete_document(document_id: UUID, _: User = Depends(require_role("adm
 # FeedBacks
 
 @router.get("/feedbacks", response_model=list[FeedbackRead])
-async def list_feedbacks(_: User = Depends(require_role("admin")), db: AsyncSession = Depends(get_db)):
+async def list_feedbacks(_: User = Depends(require_role("admin", "ministry_manager", "validator")), db: AsyncSession = Depends(get_db)):
     
     result = await db.execute(select(Feedback).order_by(Feedback.created_at.desc()))
     return result.scalars().all()
@@ -293,7 +293,7 @@ async def list_feedbacks(_: User = Depends(require_role("admin")), db: AsyncSess
     
     
 @router.get("/feedbacks/{feedback_id}", response_model=FeedbackRead)
-async def get_feedback_by_id(feedback_id: UUID, _: User = Depends(require_role("admin")), db: AsyncSession = Depends(get_db)):
+async def get_feedback_by_id(feedback_id: UUID, _: User = Depends(require_role("admin", "ministry_manager", "validator")), db: AsyncSession = Depends(get_db)):
         feedback = await db.get(Feedback, feedback_id)
         if feedback is None:
             raise _not_found("Feedback")
@@ -302,7 +302,7 @@ async def get_feedback_by_id(feedback_id: UUID, _: User = Depends(require_role("
 
 
 @router.delete("/feedbacks/{feedback_id}")
-async def delete_feedback(feedback_id: UUID, _: User = Depends(require_role("admin")), db: AsyncSession = Depends(get_db)):
+async def delete_feedback(feedback_id: UUID, _: User = Depends(require_role("admin", "ministry_manager")), db: AsyncSession = Depends(get_db)):
         feedback = await db.get(Feedback, feedback_id)
         if feedback is None:
             raise _not_found("Feedback")

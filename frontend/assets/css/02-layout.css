@@ -99,6 +99,13 @@
   height: 22px;
 }
 
+.sidebar__brand-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .sidebar__brand-mark::after {
   content: '';
   position: absolute;

@@ -1,8 +1,9 @@
 import { requireAuth, enforcePageRole, takeFlash } from './modules/route-guard.js';
-import { logout, getUser, hasRole } from './modules/auth.js';
+import { logout, getUser, hasRole, normalizeRole } from './modules/auth.js';
 import { showToast } from './modules/toast.js';
 import { initSidebar } from './modules/sidebar.js';
 import { initTheme } from './modules/theme.js';
+import { initNotifications } from './modules/notifications.js';
 
 /**
  * Câble la déconnexion et personnalise la topbar une fois les composants
@@ -21,7 +22,7 @@ function initSessionUI() {
   // Masque les liens de navigation réservés à des rôles que l'utilisateur
   // n'a pas (ex. Base documentaire). `:not(body)` évite le gate de page.
   document.querySelectorAll('[data-require-role]:not(body)').forEach((el) => {
-    const roles = el.dataset.requireRole.split(',').map((r) => r.trim()).filter(Boolean);
+    const roles = el.dataset.requireRole.split(',').map((r) => normalizeRole(r.trim())).filter(Boolean);
     if (roles.length && !hasRole(...roles)) el.hidden = true;
   });
 
@@ -60,6 +61,7 @@ if (isAuthorized) {
 
   document.addEventListener('siou:components-ready', initSidebar);
   document.addEventListener('siou:components-ready', initSessionUI);
+  document.addEventListener('siou:components-ready', initNotifications);
   initTheme();
 }
 

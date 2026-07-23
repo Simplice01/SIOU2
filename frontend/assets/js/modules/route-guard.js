@@ -17,7 +17,7 @@
  * requête (Depends(get_current_user) / require_role).
  */
 
-import { isAuthenticated, hasRole } from './auth.js';
+import { isAuthenticated, hasRole, normalizeRole } from './auth.js';
 
 const LOGIN_PAGE = '/login.html';
 const HOME_PAGE = '/index.html';
@@ -27,7 +27,7 @@ const FLASH_KEY = 'siou:flash';
 function parseRoles(raw) {
   return (raw || '')
     .split(',')
-    .map((role) => role.trim())
+    .map((role) => normalizeRole(role.trim()))
     .filter(Boolean);
 }
 

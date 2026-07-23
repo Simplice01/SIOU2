@@ -13,6 +13,7 @@
 
 import { listFeedbacks, deleteFeedback } from './feedback-service.js';
 import { messageFromError } from './api.js';
+import { getUser, hasRole } from './auth.js';
 import { initInstantSearch } from './search.js';
 import { showToast } from './toast.js';
 import { escapeHtml, formatRelativeDate, formatTime } from './utils.js';
@@ -65,7 +66,11 @@ function createRow(feedback) {
 
   const actionsCell = document.createElement('td');
   actionsCell.style.cssText = 'padding: var(--sp-4); text-align:right; white-space:nowrap;';
-  actionsCell.innerHTML = '<button class="btn btn--ghost btn--sm" data-feedback-delete type="button">Supprimer</button>';
+  const currentUser = getUser();
+  const canDelete = hasRole('admin', 'ministry_manager') || feedback.user_id === currentUser?.id;
+  actionsCell.innerHTML = canDelete
+    ? '<button class="btn btn--ghost btn--sm" data-feedback-delete type="button">Supprimer</button>'
+    : '<span class="badge badge--neutral">Lecture seule</span>';
 
   row.append(ratingCell, commentCell, convCell, dateCell, actionsCell);
   return row;

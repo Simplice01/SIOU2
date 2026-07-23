@@ -80,6 +80,24 @@ export function getRole() {
   return getUser()?.role ?? null;
 }
 
+export function normalizeRole(role) {
+  const aliases = {
+    administrateur: 'admin',
+    administrator: 'admin',
+    admin: 'admin',
+    usager_anonyme: 'user',
+    usager: 'user',
+    user: 'user',
+    secretaire: 'secretary',
+    secretary: 'secretary',
+    point_focal: 'validator',
+    validator: 'validator',
+    responsable_ministere: 'ministry_manager',
+    ministry_manager: 'ministry_manager',
+  };
+  return aliases[String(role || '').trim()] || String(role || '').trim();
+}
+
 /**
  * Indique si l'utilisateur possède l'un des rôles attendus.
  * Base de l'autorisation RBAC côté client, à étendre au besoin.
@@ -87,8 +105,9 @@ export function getRole() {
  * @returns {boolean}
  */
 export function hasRole(...roles) {
-  const role = getRole();
-  return role !== null && roles.includes(role);
+  const role = normalizeRole(getRole());
+  const expected = roles.map(normalizeRole);
+  return role !== '' && expected.includes(role);
 }
 
 /**

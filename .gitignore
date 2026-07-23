@@ -1,4 +1,5 @@
 node_modules
+frontend/.next/
 .vscode
 *.db
 *.sqlite

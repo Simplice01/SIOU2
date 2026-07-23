@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="title desc">
+  <title id="title">Logo SIOU</title>
+  <desc id="desc">Logo chatbot du systeme intelligent d'orientation des usagers</desc>
+  <defs>
+    <linearGradient id="bg" x1="12" y1="10" x2="86" y2="88" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#244f70"/>
+      <stop offset="1" stop-color="#102f47"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#081826" flood-opacity=".24"/>
+    </filter>
+  </defs>
+
+  <rect x="7" y="7" width="82" height="82" rx="24" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="9" y="9" width="78" height="78" rx="22" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="3"/>
+
+  <!-- Bulle chatbot -->
+  <path d="M27 25h42c6 0 11 4.9 11 11v25c0 6.1-5 11-11 11H48.5L35 80v-8h-8c-6.1 0-11-4.9-11-11V36c0-6.1 4.9-11 11-11Z"
+        fill="#f8fbff"/>
+
+  <!-- Tete du bot -->
+  <rect x="31" y="39" width="34" height="24" rx="10" fill="#173b59"/>
+  <path d="M39 39v-5c0-2.8 2.2-5 5-5h8c2.8 0 5 2.2 5 5v5" fill="none" stroke="#173b59" stroke-width="5" stroke-linecap="round"/>
+  <circle cx="48" cy="27" r="4" fill="#f2c94c"/>
+
+  <!-- Oreillettes / assistance -->
+  <path d="M29 47h4v9h-4c-2.2 0-4-1.8-4-4v-1c0-2.2 1.8-4 4-4Z" fill="#173b59"/>
+  <path d="M67 47h-4v9h4c2.2 0 4-1.8 4-4v-1c0-2.2-1.8-4-4-4Z" fill="#173b59"/>
+
+  <!-- Visage -->
+  <circle cx="41" cy="51" r="3.2" fill="#f8fbff"/>
+  <circle cx="55" cy="51" r="3.2" fill="#f8fbff"/>
+  <path d="M42 58c3.6 3 8.4 3 12 0" fill="none" stroke="#f8fbff" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Signal IA / reponse -->
+  <path d="M70 33h5M72.5 30.5v5" stroke="#f2c94c" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="74" cy="62" r="3.5" fill="#0a8754"/>
+
+  <!-- Tricolore Benin -->
+  <path d="M24 82h48" stroke="#ffffff" stroke-opacity=".22" stroke-width="5" stroke-linecap="round"/>
+  <path d="M24 82h16" stroke="#0a8754" stroke-width="5" stroke-linecap="round"/>
+  <path d="M41 82h16" stroke="#f2c94c" stroke-width="5" stroke-linecap="round"/>
+  <path d="M58 82h14" stroke="#d43f3a" stroke-width="5" stroke-linecap="round"/>
+</svg>

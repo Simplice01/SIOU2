@@ -12,7 +12,7 @@
  */
 
 import { apiFetch } from './api.js';
-import { getUser } from './auth.js';
+import { getUser, hasRole } from './auth.js';
 
 /**
  * Signale une réponse jugée incorrecte (note basse = signalement).
@@ -44,10 +44,16 @@ export function reportAnswer({ conversationId = null, messageId = null, comment 
 
 /** Liste tous les signalements pour modération. @returns {Promise<Array>} */
 export function listFeedbacks() {
-  return apiFetch('/admin/feedbacks');
+  if (hasRole('admin', 'ministry_manager', 'validator')) {
+    return apiFetch('/admin/feedbacks');
+  }
+  return apiFetch('/feedbacks');
 }
 
 /** Supprime un signalement. @returns {Promise<Object>} */
 export function deleteFeedback(id) {
-  return apiFetch(`/admin/feedbacks/${id}`, { method: 'DELETE' });
+  if (hasRole('admin', 'ministry_manager')) {
+    return apiFetch(`/admin/feedbacks/${id}`, { method: 'DELETE' });
+  }
+  return apiFetch(`/feedbacks/${id}`, { method: 'DELETE' });
 }

@@ -21,6 +21,13 @@ from .conversation_schema import (
 )
 from .feedback_schema import FeedbackBase, FeedbackCreate, FeedbackRead, FeedbackUpdate
 from .audio_schema import SpeechToTextResponse
+from .notification_schema import (
+	NotificationBase,
+	NotificationCountRead,
+	NotificationCreate,
+	NotificationRead,
+	NotificationUpdate,
+)
 
 
 UserSummary = UserRead

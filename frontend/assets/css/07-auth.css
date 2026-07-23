@@ -142,6 +142,19 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 8px 22px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(4px);
 }
+
+.auth__brand-mark--official {
+  width: 76px;
+  height: 42px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.auth__brand-mark--official img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 /* Liseré tricolore signature sous la marque. */
 .auth__brand-mark::after {
   content: '';
@@ -296,15 +309,21 @@
 
 .auth__logo {
   display: flex;
+  justify-content: center;
   align-items: center;
   gap: var(--sp-3);
-  margin-bottom: var(--sp-8);
+  margin-bottom: var(--sp-6);
 }
 
 .auth__logo img {
-  height: 48px;
-  width: auto;
+  height: auto;
+  width: min(280px, 100%);
   object-fit: contain;
+}
+
+.auth__logo--system img {
+  width: 58px;
+  height: 58px;
 }
 
 .auth__logo-fallback {

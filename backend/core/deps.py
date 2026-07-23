@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.core.database import get_db
 from backend.core.security import decode_token
-from backend.models.user_model import User
+from backend.models.user_model import User, normalize_role
 
 bearer_scheme = HTTPBearer()
 
@@ -72,8 +72,10 @@ def require_role(*allowed_roles: str):
     en jeu.
     """
 
+    normalized_allowed_roles = {normalize_role(role) for role in allowed_roles}
+
     def dependency(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in allowed_roles:
+        if normalize_role(current_user.role) not in normalized_allowed_roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Accès refusé pour ce rôle.",

@@ -9,6 +9,7 @@ from .user_model import User
 from .document_models import Document, DocumentChunk
 from .conversation_models import Conversation, Message, MessageSource
 from .feedback_model import Feedback
+from .notification_model import Notification, NotificationRead
 
 # Export all models for easy import
 __all__ = [
@@ -20,6 +21,8 @@ __all__ = [
     "Message",
     "MessageSource",
     "Feedback",
+    "Notification",
+    "NotificationRead",
 ]
 
 # Utility function to get all models for Alembic migrations
@@ -36,4 +39,6 @@ def get_all_models():
         Message,
         MessageSource,
         Feedback,
+        Notification,
+        NotificationRead,
     ]

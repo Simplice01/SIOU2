@@ -18,14 +18,24 @@ from backend.core.database import Base
 ROLE_TO_DATABASE = {
     "admin": "administrateur",
     "administrator": "administrateur",
+    "administrateur": "administrateur",
     "user": "usager_anonyme",
+    "usager": "usager_anonyme",
+    "usager_anonyme": "usager_anonyme",
+    "secretary": "secretaire",
+    "secretaire": "secretaire",
     "validator": "point_focal",
+    "point_focal": "point_focal",
+    "ministry_manager": "responsable_ministere",
+    "responsable_ministere": "responsable_ministere",
 }
 
 ROLE_TO_API = {
     "administrateur": "admin",
     "usager_anonyme": "user",
+    "secretaire": "secretary",
     "point_focal": "validator",
+    "responsable_ministere": "ministry_manager",
 }
 
 USER_ROLE_TYPE = ENUM(
@@ -49,6 +59,10 @@ def to_api_role(role: str | None) -> str:
     if not role:
         return "user"
     return ROLE_TO_API.get(role, role)
+
+
+def normalize_role(role: str | None) -> str:
+    return to_api_role(to_database_role(role))
 
 
 class User(Base):

@@ -14,16 +14,16 @@ from backend.services.ingestion import run_document_ingestion
 
 router = APIRouter(prefix="/api/documents", tags=["Documents"])
 
-# Rôles autorisés à écrire dans la base documentaire (back-office).
-WRITE_ROLES = ("admin", "responsable_ministere", "point_focal")
+# Roles autorises a consulter et administrer la base documentaire (back-office).
+WRITE_ROLES = ("admin", "administrateur", "ministry_manager", "responsable_ministere", "validator", "point_focal")
 
 
 @router.get("", response_model=list[DocumentRead])
 async def list_documents_endpoint(
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_role(*WRITE_ROLES)),
 ):
-    """Liste les documents indexés (tout utilisateur authentifié)."""
+    """Liste les documents indexes pour les roles back-office."""
     result = await db.execute(select(Document).options(selectinload(Document.source_file)).order_by(Document.created_at.desc()))
     return result.scalars().all()
 

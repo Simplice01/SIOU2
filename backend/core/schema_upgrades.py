@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 # Ordre important : extension d'abord, puis colonne, puis index.
 _POSTGRES_UPGRADES: tuple[str, ...] = (
     "CREATE EXTENSION IF NOT EXISTS vector",
+    "CREATE EXTENSION IF NOT EXISTS unaccent",
     # Colonne ajoutée aux bases déjà déployées (create_all ignore les tables existantes).
     "ALTER TABLE document_chunks ADD COLUMN IF NOT EXISTS chunk_metadata JSONB",
     "ALTER TABLE messages ADD COLUMN IF NOT EXISTS model_used TEXT",

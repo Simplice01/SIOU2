@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="/assets/css/05-animations.css">
   <link rel="stylesheet" href="/assets/css/06-responsive.css">
 </head>
-<body data-page="utilisateurs" data-require-role="admin">
+<body data-page="utilisateurs" data-require-role="admin, administrateur">
   <a class="skip-link" href="#main-content">Aller au contenu principal</a>
 
   <div class="app-shell">
@@ -109,9 +109,10 @@
           <div class="field">
             <label class="field__label" for="user-role">Rôle</label>
             <select id="user-role" name="role" class="select">
-              <option value="user">Utilisateur</option>
-              <option value="point_focal">Point focal</option>
-              <option value="responsable_ministere">Responsable ministère</option>
+              <option value="user">Usager</option>
+              <option value="secretary">Secrétaire</option>
+              <option value="validator">Validateur / point focal</option>
+              <option value="ministry_manager">Responsable ministère</option>
               <option value="admin">Administrateur</option>
             </select>
           </div>

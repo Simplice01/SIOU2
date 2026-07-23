@@ -13,7 +13,7 @@
 
 import { listUsers, createUser, updateUser, deleteUser } from './user-service.js';
 import { messageFromError } from './api.js';
-import { getUser } from './auth.js';
+import { getUser, normalizeRole } from './auth.js';
 import { initModals, openModal, closeModal } from './modal.js';
 import { initInstantSearch } from './search.js';
 import { showToast } from './toast.js';
@@ -23,11 +23,17 @@ const ROLE_LABELS = {
   admin: 'Administrateur',
   responsable_ministere: 'Responsable ministère',
   point_focal: 'Point focal',
-  user: 'Utilisateur',
+  user: 'Usager',
+  usager_anonyme: 'Usager',
+  secretary: 'Secrétaire',
+  secretaire: 'Secrétaire',
+  validator: 'Validateur / point focal',
+  ministry_manager: 'Responsable ministère',
+  administrateur: 'Administrateur',
 };
 
 function roleLabel(role) {
-  return ROLE_LABELS[role] || role || 'Utilisateur';
+  return ROLE_LABELS[role] || ROLE_LABELS[normalizeRole(role)] || role || 'Utilisateur';
 }
 
 let editingId = null;
@@ -175,7 +181,7 @@ function openEditModal(user) {
   // Le mot de passe ne se change pas ici (pas d'endpoint dédié).
   if (r.passwordField) r.passwordField.hidden = true;
   if (r.password) r.password.value = '';
-  if (r.role) r.role.value = user.role || 'user';
+  if (r.role) r.role.value = normalizeRole(user.role) || 'user';
   if (r.active) r.active.checked = user.is_active !== false;
 
   // Un admin ne peut pas se rétrograder lui-même (garde-fou).

@@ -23,8 +23,14 @@ async def test_list_documents_requires_auth(client):
     assert response.status_code == 401
 
 
-async def test_list_documents_authenticated(client, user_token):
+async def test_list_documents_as_regular_user_is_forbidden(client, user_token):
     response = await client.get("/api/documents", headers=auth_header(user_token))
+
+    assert response.status_code == 403
+
+
+async def test_list_documents_as_admin(client, admin_token):
+    response = await client.get("/api/documents", headers=auth_header(admin_token))
 
     assert response.status_code == 200
     assert response.json() == []

@@ -15,6 +15,9 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+MAX_SEARCH_PLANS = 4
+MIN_CANDIDATES_PER_PLAN = 6
+
 
 def split_administrative_document(
     document_text: str,
@@ -122,21 +125,32 @@ async def retrieve_hybrid_chunks(
     if not words:
         return []
 
-    rows = []
-    for plan_words, required_terms in _search_plans(query_text, words):
+    search_plans = _search_plans(query_text, words)[:MAX_SEARCH_PLANS]
+    merged_rows: dict[Any, dict[str, Any]] = {}
+    for plan_index, (plan_words, required_terms) in enumerate(search_plans):
         rows = await _run_search(
             db_session=db_session,
             words=plan_words,
             required_terms=required_terms,
-            top_k=top_k,
+            top_k=max(top_k, MIN_CANDIDATES_PER_PLAN),
         )
-        if rows:
-            break
-    if not rows:
+        plan_weight = 1.0 / (plan_index + 1)
+        for row in rows:
+            row_dict = dict(row)
+            row_id = row_dict["id"]
+            weighted_score = float(row_dict.get("score") or 0.0) + plan_weight
+            existing = merged_rows.get(row_id)
+            if existing is None or weighted_score > float(existing.get("_weighted_score") or 0.0):
+                row_dict["_weighted_score"] = weighted_score
+                merged_rows[row_id] = row_dict
+
+    if not merged_rows:
         return []
 
+    rows = list(merged_rows.values())
     rows = _rerank_rows(query_text, rows)
-    max_score = max(float(row["score"] or 0.0) for row in rows) or 1.0
+    rows = rows[:top_k]
+    max_score = max(float(row.get("_weighted_score") or row["score"] or 0.0) for row in rows) or 1.0
     return [
         {
             "chunk_id": row["id"],
@@ -144,7 +158,7 @@ async def retrieve_hybrid_chunks(
             "content": row["content"],
             "page_number": row["page_number"],
             "score": float(row["score"] or 0.0),
-            "similarity": min(1.0, max(0.0, float(row["score"] or 0.0) / max_score)),
+            "similarity": min(1.0, max(0.0, float(row.get("_weighted_score") or row["score"] or 0.0) / max_score)),
         }
         for row in rows
     ]
@@ -193,6 +207,7 @@ def _significant_words(value: str) -> list[str]:
         "chargé",
         "charge",
     }
+    stop_words.update({"moi", "quel", "quelle", "son", "ses", "sur", "information", "informations"})
     normalized = _strip_accents(value.lower())
     words = re.findall(r"[a-z0-9]{4,}", normalized)
     return [word for word in dict.fromkeys(words) if word not in stop_words][:12]
@@ -215,12 +230,18 @@ def _search_plans(query_text: str, words: list[str]) -> list[tuple[list[str], in
         plans.append((words, relaxed_required))
 
     normalized_query = _strip_accents(query_text.lower())
+    subject_words = _expand_subject_words(normalized_query, words)
+    if subject_words != words:
+        plans.append((subject_words[:10], min(2, len(subject_words))))
+
     expanded_words = _expand_intent_words(normalized_query, words)
     if expanded_words != words:
         # Une recherche intentionnelle doit rester exigeante sur le sujet
         # principal, mais ne doit pas échouer parce que l'usager dit "trouve"
         # là où le document dit "adresse" ou "située".
-        plans.append((expanded_words[:10], min(3, max(1, len(expanded_words) // 2))))
+        subject_expanded = _expand_subject_words(normalized_query, expanded_words)
+        plans.append((subject_expanded[:12], min(3, max(1, len(subject_expanded) // 2))))
+        plans.append((subject_expanded[:12], min(2, len(subject_expanded))))
         plans.append((expanded_words[:10], min(2, len(expanded_words))))
 
     deduped: list[tuple[list[str], int]] = []
@@ -235,6 +256,27 @@ def _search_plans(query_text: str, words: list[str]) -> list[tuple[list[str], in
     return deduped
 
 
+def _expand_subject_words(normalized_query: str, words: list[str]) -> list[str]:
+    expanded = list(words)
+    word_set = set(words)
+
+    def add(*terms: str) -> None:
+        for term in terms:
+            if term not in expanded:
+                expanded.append(term)
+
+    if "asin" in word_set or "agence des systemes" in normalized_query:
+        add("asin", "agence", "systemes", "information", "numerique")
+    if "sbin" in word_set or "societe beninoise" in normalized_query:
+        add("sbin", "societe", "beninoise", "infrastructures", "numeriques")
+    if "mnd" in word_set or "ministere du numerique" in normalized_query:
+        add("mnd", "ministere", "numerique", "digitalisation")
+    if "siou" in word_set:
+        add("siou", "orientation", "usagers", "assistant")
+
+    return expanded[:12]
+
+
 def _expand_intent_words(normalized_query: str, words: list[str]) -> list[str]:
     expanded = list(words)
     word_set = set(words)
@@ -244,14 +286,14 @@ def _expand_intent_words(normalized_query: str, words: list[str]) -> list[str]:
             if term not in expanded:
                 expanded.append(term)
 
-    asks_location = any(term in word_set for term in {"trouve", "situe", "situee", "adresse", "localisation"})
+    asks_location = any(term in word_set for term in {"trouve", "situe", "situee", "adresse", "localisation"}) or "ou se" in normalized_query
     asks_role = any(term in word_set for term in {"role", "mission", "missions", "attribution", "attributions"})
     asks_action = "que fait" in normalized_query or "a quoi sert" in normalized_query
     asks_overview = _asks_overview(normalized_query, word_set)
     asks_services = any(term in word_set for term in {"service", "services", "composee", "composition"})
 
     if asks_location:
-        add("adresse", "localisation", "situee", "immeuble", "quartier", "cotonou")
+        add("adresse", "localisation", "situee", "situe", "siege", "immeuble", "quartier", "cotonou")
     if asks_role or asks_action or asks_overview:
         add(
             "role",
@@ -299,6 +341,9 @@ def _rerank_rows(query_text: str, rows: list[Any]) -> list[Any]:
 
     subject_phrases = [
         "agence des systemes d'information et du numerique",
+        "agence des systemes d information et du numerique",
+        "agence des systemes d'information du numerique",
+        "agence des systemes d information du numerique",
         "direction du numerique",
         "direction de la digitalisation",
         "sbin",
@@ -309,21 +354,23 @@ def _rerank_rows(query_text: str, rows: list[Any]) -> list[Any]:
         return rows
     query_words = set(re.findall(r"[a-z0-9]{4,}", normalized_query))
     is_overview = _asks_overview(normalized_query, query_words)
-    asks_location = any(term in query_words for term in {"trouve", "situe", "situee", "adresse", "localisation"})
+    asks_location = any(term in query_words for term in {"trouve", "situe", "situee", "adresse", "localisation"}) or "ou se" in normalized_query
 
     def rank(row: Any) -> tuple[float, float]:
         content = _strip_accents(str(row["content"]).lower())
         phrase_boost = sum(1.0 for phrase in expected_phrases if phrase in content)
         acronym_boost = 0.0
-        if "sbin" in expected_phrases and re.search(r"\bsbin\b", content):
+        if ("sbin" in expected_phrases or "sbin" in query_words) and re.search(r"\bsbin\b", content):
             acronym_boost += 0.5
-        if "asin" in expected_phrases and re.search(r"\basin\b", content):
+        if ("asin" in expected_phrases or "asin" in query_words) and (
+            re.search(r"\basin\b", content) or "agence des systemes" in content
+        ):
             acronym_boost += 0.5
         intent_boost = 0.0
         if is_overview:
             intent_boost += sum(0.35 for term in ("mission", "missions", "attribution", "attributions", "role", "bras operationnel") if term in content)
         if asks_location:
-            intent_boost += sum(0.35 for term in ("adresse", "localisation", "situee", "immeuble", "quartier") if term in content)
-        return (phrase_boost + acronym_boost + intent_boost, float(row["score"] or 0.0))
+            intent_boost += sum(0.35 for term in ("adresse", "localisation", "situee", "situe", "siege", "immeuble", "quartier", "cotonou") if term in content)
+        return (phrase_boost + acronym_boost + intent_boost, float(row.get("_weighted_score") or row["score"] or 0.0))
 
     return sorted(rows, key=rank, reverse=True)
